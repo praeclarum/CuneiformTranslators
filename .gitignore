@@ -1,3 +1,4 @@
+tools/tokenizer_training_data.txt
 wandb
 results
 *.DS_Store
