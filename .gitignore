@@ -1,5 +1,5 @@
-/results
-/tools/results
+wandb
+results
 *.DS_Store
 __pycache__/
 *.py[cod]
