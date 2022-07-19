@@ -1,0 +1,6 @@
+numpy==1.19.2
+torch==1.12.0
+transformers==4.3.1
+datasets==2.3.2
+tqdm
+jupyter
