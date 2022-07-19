@@ -1,3 +1,5 @@
+/results
+/tools/results
 *.DS_Store
 __pycache__/
 *.py[cod]
