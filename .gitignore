@@ -1,5 +1,6 @@
 /dist
-tools/tokenizer_training_data.txt
+/tools/tokenizer_training_data.txt
+/tools/mweb.py
 wandb
 results
 *.DS_Store
