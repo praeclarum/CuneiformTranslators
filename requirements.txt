@@ -1,3 +1,4 @@
 tqdm
 jupyter
 python-slugify
+requests
