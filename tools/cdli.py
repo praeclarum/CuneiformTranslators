@@ -1,5 +1,7 @@
+import io
 import requests
 from tqdm import tqdm
+import pandas as pd
 
 class Publication():
     def __init__(self, id):
@@ -82,9 +84,15 @@ def parse_atf(atf):
 
     return publications
 
-def get_publications():
+def get_atf():
     atf_url = "https://github.com/cdli-gh/data/raw/master/cdliatf_unblocked.atf"
     atf = str(requests.get(atf_url).content, "utf8")
     return parse_atf(atf)
+
+def get_catalog():
+    cat_url = "https://github.com/cdli-gh/data/raw/master/cdli_cat.csv"
+    cat_csv = str(requests.get(cat_url).content, "utf8")
+    cat = pd.read_csv(io.StringIO(cat_csv))
+    return cat
     
 
