@@ -5,3 +5,5 @@ datasets==2.3.2
 tqdm
 jupyter
 python-slugify
+requests
+pandas
