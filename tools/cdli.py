@@ -1,6 +1,5 @@
 import io
 import requests
-from tqdm import tqdm
 import pandas as pd
 
 class Publication():
@@ -47,7 +46,7 @@ def parse_atf(atf):
 #     for l in atf_lines[:50]:
 #         print(l)
 
-    for line in tqdm(atf_lines):
+    for line in atf_lines:
         line = line.replace("\t", " ").strip()
         if len(line) < 1:
             continue
@@ -86,13 +85,57 @@ def parse_atf(atf):
 
 def get_atf():
     atf_url = "https://github.com/cdli-gh/data/raw/master/cdliatf_unblocked.atf"
+    print(f"Downloading {atf_url}")
     atf = str(requests.get(atf_url).content, "utf8")
+    print("Parsing atf")
     return parse_atf(atf)
 
 def get_catalog():
     cat_url = "https://github.com/cdli-gh/data/raw/master/cdli_cat.csv"
+    print(f"Downloading {cat_url}")
     cat_csv = str(requests.get(cat_url).content, "utf8")
     cat = pd.read_csv(io.StringIO(cat_csv))
     return cat
     
+genres = {
+    'administrative',
+    'ritual',
+    'omens',
+    'astronomical',
+    'school',
+    'prayer/incantation',
+    'administative',
+    'lexical',
+    'pottery',
+    'letter',
+    'royal/votive',
+    'uncertain',
+    'mathematical',
+    'scientific',
+    'literary',
+    'legal',
+    'astronomical, omen',
+    'votive',
+    'medical',
+    'historical',
+    'fake',
+    'royal/monumental',
+    'administrative record',
+    'omen',
+    'private/votive'
+}
+
+def get_genre(x):
+    g = str(x).replace("?","").replace("(see subgenre)","").replace("(modern)", "").replace("(seal)", "").strip().lower()
+    if g == "other":
+        return "other-genre"
+    if g in genres:
+        return g
+    return "other-genre"
+
+def get_genres(gs):
+    return {get_genre(y) for x in gs.split(";") for y in x.split(",")}
+
+
+
 
