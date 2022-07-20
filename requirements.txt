@@ -1,0 +1,3 @@
+tqdm
+jupyter
+python-slugify
