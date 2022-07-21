@@ -116,6 +116,7 @@ def merge_atf_with_catalog(atf, cat, tqdm=lambda x: x):
         pub.period = str(meta["period"].values[0])
         pub.provenience = str(meta["provenience"].values[0])
         pub.collection = str(meta["collection"].values[0])
+        pub.translation_source = str(meta["translation_source"].values[0])
         output_pubs.append(pub)
     output_pubs.sort(key=lambda a: a.id)
     return output_pubs
