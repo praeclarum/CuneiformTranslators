@@ -1,3 +1,4 @@
+/data/cdli_photo_annotations
 /dist
 /tools/tokenizer_training_data.txt
 /tools/mweb.py
