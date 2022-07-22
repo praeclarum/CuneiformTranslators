@@ -1,5 +1,6 @@
 import io
 import requests
+import re
 import pandas as pd
 
 class Publication():
@@ -190,6 +191,103 @@ def get_genre(x):
 def get_genres(gs):
     return {get_genre(y) for x in gs.split(";") for y in x.split(",")}
 
+
+
+def get_years(raw_periods):
+    years = []
+    matches = re.findall(r"(\d+)\s*(BC|AD)?\s*([-–]\s*(\d+)\s*(BC|AD))?", raw_periods)
+    for syear, sera, end, eyear, eera in matches:
+        if len(sera) == 0:
+            sera = eera
+        if len(sera) > 0:
+            year = (int(syear), sera, int(eyear) if len(eyear)>0 else 0, eera)
+            if year == (1200, 'BC', 700, 'BC'):
+                year = (1150, 'BC', 730, 'BC')
+            years.append(year)
+    return years
+
+# print(get_years("Uruk III (ca. 3200- 3000 BC) - Early Dynastic I-II (ca. 2900-2700 BC)"))
+# print(get_years("Parthian (247 BC- 224 AD)"))
+# print(get_years("Achaemenid (547–331 BC)"))
+# print(get_years("Linear Elamite (ca. 2200 BC)"))
+
+periods = [
+    ((8500, 'BC', 3500, 'BC'), 'Pre-Uruk V', 'pre-uruk-v'),
+    ((3500, 'BC', 3350, 'BC'), 'Uruk V', 'uruk-v'),
+    ((3350, 'BC', 3200, 'BC'), 'Uruk IV', 'uruk-iv'),
+    ((3300, 'BC', 3000, 'BC'), 'Egyptian 0', 'egyptian-0'),
+    ((3200, 'BC', 3000, 'BC'), 'Uruk III', 'uruk-iii'),
+    ((3100, 'BC', 2900, 'BC'), 'Proto-Elamite', 'proto-elamite'),
+    ((2900, 'BC', 2700, 'BC'), 'ED I-II', 'ed-i-ii'),
+    ((2700, 'BC', 2500, 'BC'), 'Early Dynastic IIIA', 'early-dynastic-iiia'),
+    ((2600, 'BC', 2500, 'BC'), 'ED IIIa', 'ed-iiia'),
+    ((2500, 'BC', 2340, 'BC'), 'ED IIIb', 'ed-iiib'),
+    ((2350, 'BC', 2250, 'BC'), 'Ebla', 'ebla'),
+    ((2340, 'BC', 2200, 'BC'), 'Old Akkadian', 'old-akkadian'),
+    ((2200, 'BC', 0, ''), 'Linear Elamite', 'linear-elamite'),
+    ((2200, 'BC', 2100, 'BC'), 'Lagash II', 'lagash-ii'),
+    ((2700, 'BC', 1500, 'BC'), 'Old Elamite', 'old-elamite'),
+    ((2200, 'BC', 1900, 'BC'), 'Harappan', 'harappan'),
+    ((2100, 'BC', 2000, 'BC'), 'Ur III', 'ur-iii'),
+    ((2000, 'BC', 1900, 'BC'), 'Early Old Babylonian', 'early-old-babylonian'),
+    ((1950, 'BC', 1850, 'BC'), 'Old Assyrian', 'old-assyrian'),
+    ((1900, 'BC', 1600, 'BC'), 'Old Babylonian', 'old-babylonian'),
+    ((1500, 'BC', 1100, 'BC'), 'Middle Hittite', 'middle-hittite'),
+    ((1400, 'BC', 1100, 'BC'), 'Middle Babylonian', 'middle-babylonian'),
+    ((1400, 'BC', 1000, 'BC'), 'Middle Assyrian', 'middle-assyrian'),
+    ((1300, 'BC', 1000, 'BC'), 'Middle Elamite', 'middle-elamite'),
+    ((1150, 'BC', 730, 'BC'), 'Early Neo-Babylonian', 'early-neo-babylonian'),
+    ((911, 'BC', 612, 'BC'), 'Neo-Assyrian', 'neo-assyrian'),
+    ((770, 'BC', 539, 'BC'), 'Neo-Elamite', 'neo-elamite'),
+    ((626, 'BC', 539, 'BC'), 'Neo-Babylonian', 'neo-babylonian'),
+    ((547, 'BC', 331, 'BC'), 'Achaemenid', 'achaemenid'),
+    ((323, 'BC', 63, 'BC'), 'Hellenistic', 'hellenistic'),
+    ((247, 'BC', 224, 'AD'), 'Parthian', 'parthian'),
+    ((224, 'AD', 641, 'AD'), 'Sassanian', 'sassanian'),
+    ((3000, 'AD', 0, ''), 'Other', 'other-period'),
+    ((9999, 'AD', 0, ''), 'Fake', 'fake'),
+]
+def get_period_sort_value(period):
+    x, _, _ = period
+    s = (-x[0] if x[1]=="BC" else x[0])
+    if x[2] == 0:
+        return s
+    e = (-x[2] if x[3]=="BC" else x[2])
+    return (s+e)/2
+
+periods = sorted(periods, key=get_period_sort_value)
+# for p in periods:
+#     print(f"    ({repr(p)},")
+#     print(f"    ({repr(p[0])}, {repr(p[1])}, {repr(slugify(p[1]))}),")
+
+period_from_year = {x[0]: x[1] for x in periods}
+year_from_period = {x[1]: x[0] for x in periods}
+period_slug_from_period = {x[1]: x[2] for x in periods}
+period_from_period_slug = {x[2]: x[1] for x in periods}
+
+def get_period_from_year(year):
+    if year in period_from_year:
+        return period_from_year[year]
+    return "other-period"
+
+def sanitize_period(y):
+    p = y.replace("?", "").replace("(modern)","").replace("fake (ancient)", "Fake").strip()
+    if p == "modern" or p == "fake" or p == "copy":
+        p = "Fake"
+    elif p == "uncertain" or p == "nan":
+        p = "Other"
+    return p
+
+def get_periods(raw_periods):
+    years = get_years(raw_periods)
+    if len(years) == 0:
+        periods = [sanitize_period(y) for z in raw_periods.split(" or ") for y in z.split(";")]
+        periods = [p for p in periods if p in year_from_period]
+        if len(periods) == 0:
+            print("No periods for:", raw_periods)
+        return periods
+    else:
+        return [get_period_from_year(x) for x in years]
 
 
 
