@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cuneiform Aligner</title>
+    <style>
+        body {}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Cuneiform Aligner</h1>
+        <canvas id="canvas"></canvas>
+    </div>
+    <script src="align.js"></script>
+    <script>
+        const $canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const canvasWidth = 1000;
+        const canvasHeight = 1000;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        var pubId = "P231798";
+        var img = new Image();
+        var imgScale = 1;
+        var textAreaBounds = [{
+            areaName: "obverse",
+            x: 0.25,
+            y: 0.1,
+            width: 0.5,
+            height: 0.8
+        }];
+        const boundaryLineThickness = 11;
+        const boundaryHandleRadius = 22;
+        var mouseIsDown = false;
+
+        function getTextAreaCanvasBounds(areaIndex) {
+            const bounds = textAreaBounds[areaIndex];
+            const x = bounds.x * img.width * imgScale;
+            const y = bounds.y * img.height * imgScale;
+            const width = bounds.width * img.width * imgScale;
+            const height = bounds.height * img.height * imgScale;
+            return {
+                x: x,
+                y: y,
+                width: width,
+                height: height
+            };
+        }
+
+        function hitTestTextAreaHandle(x, y) {
+            for (var i = 0; i < textAreaBounds.length; i++) {
+                const bounds = textAreaBounds[i];
+                const a = getTextAreaCanvasBounds(i);
+                const ax = a.x;
+                const ay = a.y;
+                const awidth = a.width;
+                const aheight = a.height;
+                if (ax - boundaryHandleRadius <= x && x <= ax + boundaryHandleRadius && ay - boundaryHandleRadius <= y && y <= ay + boundaryHandleRadius) {
+                    return {
+                        areaName: bounds.areaName,
+                        handle: "topLeft",
+                        areaIndex: i
+                    };
+                }
+                if (ax - boundaryHandleRadius <= x && x <= ax + boundaryHandleRadius && ay + aheight - boundaryHandleRadius <= y && y <= ay + aheight + boundaryHandleRadius) {
+                    return {
+                        areaName: bounds.areaName,
+                        handle: "bottomLeft",
+                        areaIndex: i
+                    };
+                }
+                if (ax + awidth - boundaryHandleRadius <= x && x <= ax + awidth + boundaryHandleRadius && ay - boundaryHandleRadius <= y && y <= ay + boundaryHandleRadius) {
+                    return {
+                        areaName: bounds.areaName,
+                        handle: "topRight",
+                        areaIndex: i
+                    };
+                }
+                if (ax + awidth - boundaryHandleRadius <= x && x <= ax + awidth + boundaryHandleRadius && ay + aheight - boundaryHandleRadius <= y && y <= ay + aheight + boundaryHandleRadius) {
+                    return {
+                        areaName: bounds.areaName,
+                        handle: "bottomRight",
+                        areaIndex: i
+                    };
+                }
+            }
+            return null;
+        }
+
+        var mouseIsDown = false;
+        var mouseDownHitTestResult = null;
+        var mouseLastX = 0;
+        var mouseLastY = 0;
+
+        $canvas.onmousedown = function(e){
+            const x = e.offsetX;
+            const y = e.offsetY;
+            const hitTestResult = hitTestTextAreaHandle(x, y);
+            if (hitTestResult) {
+                console.log("hit handle", x, y, hitTestResult);
+                mouseIsDown = true;
+                mouseDownHitTestResult = hitTestResult;
+                mouseLastX = x;
+                mouseLastY = y;
+                draw();
+            }
+        }
+        $canvas.onmouseup = function(e){
+            if (mouseIsDown) {
+                const x = e.offsetX;
+                const y = e.offsetY;
+                console.log("mouseup", x, y);
+                mouseIsDown = false;
+                mouseDownHitTestResult = null;
+                draw();
+            }
+        }
+        $canvas.onmousemove = function(e){
+            if (!mouseIsDown) return;
+            const normalizedImageToCanvasScaleX = img.width * imgScale;
+            const canvasToNormalizedImageScaleX = 1.0 / normalizedImageToCanvasScaleX;
+            const normalizedImageToCanvasScaleY = img.height * imgScale;
+            const canvasToNormalizedImageScaleY = 1.0 / normalizedImageToCanvasScaleY;
+            const x = e.offsetX;
+            const y = e.offsetY;
+            const dx = x - mouseLastX;
+            const dy = y - mouseLastY;
+            mouseLastX = x;
+            mouseLastY = y;
+            if (normalizedImageToCanvasScaleX > 0 && normalizedImageToCanvasScaleY > 0) {
+                const area = textAreaBounds[mouseDownHitTestResult.areaIndex];
+                const a = getTextAreaCanvasBounds(mouseDownHitTestResult.areaIndex);
+                if (mouseDownHitTestResult.handle == "topLeft") {
+                    area.x = (a.x + dx) * canvasToNormalizedImageScaleX;
+                    area.y = (a.y + dy) * canvasToNormalizedImageScaleY;
+                    area.width = (a.width - dx) * canvasToNormalizedImageScaleX;
+                    area.height = (a.height - dy) * canvasToNormalizedImageScaleY;
+                }
+                if (mouseDownHitTestResult.handle == "bottomLeft") {
+                    area.x = (a.x + dx) * canvasToNormalizedImageScaleX;
+                    area.y = (a.y) * canvasToNormalizedImageScaleY;
+                    area.width = (a.width - dx) * canvasToNormalizedImageScaleX;
+                    area.height = (a.height + dy) * canvasToNormalizedImageScaleY;
+                }
+                if (mouseDownHitTestResult.handle == "topRight") {
+                    area.x = (a.x) * canvasToNormalizedImageScaleX;
+                    area.y = (a.y + dy) * canvasToNormalizedImageScaleY;
+                    area.width = (a.width + dx) * canvasToNormalizedImageScaleX;
+                    area.height = (a.height - dy) * canvasToNormalizedImageScaleY;
+                }
+                if (mouseDownHitTestResult.handle == "bottomRight") {
+                    area.x = (a.x) * canvasToNormalizedImageScaleX;
+                    area.y = (a.y) * canvasToNormalizedImageScaleY;
+                    area.width = (a.width + dx) * canvasToNormalizedImageScaleX;
+                    area.height = (a.height + dy) * canvasToNormalizedImageScaleY;
+                }
+                area.width = Math.max(area.width, 0.1);
+                area.height = Math.max(area.height, 0.1);
+                draw();
+            }
+            return false;
+        }
+        function draw() {
+            // Draw checkerboard background
+            ctx.fillStyle = "#aaa";
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            ctx.fillStyle = "#888";
+            for (var i = 0; i < canvasWidth; i += 50) {
+                for (var j = 0; j < canvasHeight; j += 50) {
+                    if ((i + j) % 100 == 0) {
+                        ctx.fillRect(i, j, 50, 50);
+                    }
+                }
+            }
+            // Draw image
+            // console.log(img.width, img.height);
+            const xscale = canvasWidth / img.width;
+            const yscale = canvasHeight / img.height;
+            imgScale = Math.min(xscale, yscale);
+            ctx.drawImage(img, 0, 0, img.width * imgScale, img.height * imgScale);
+            // Draw text area boundaries
+            ctx.strokeStyle = "rgba(64,64,255,0.8)";
+            ctx.fillStyle = "rgba(64,64,255,0.8)";
+            ctx.lineWidth = boundaryLineThickness;
+            for (var i = 0; i < textAreaBounds.length; i++) {
+                const area = textAreaBounds[i];
+                const {x,y,width,height} = getTextAreaCanvasBounds(i);
+                ctx.save();
+                // clip away the inner rectangle
+                ctx.beginPath();
+                ctx.rect(0, 0, x, canvasHeight);
+                ctx.rect(x + width, 0, canvasWidth - x - width, canvasHeight);
+                ctx.rect(0, 0, canvasWidth, y);
+                ctx.rect(0, y + height, canvasWidth, canvasHeight - y - height);
+                ctx.clip();
+                // Draw boundary lines
+                ctx.strokeRect(x, y, width, height);
+                // Draw boundary drag handles
+                ctx.beginPath();
+                ctx.arc(x, y, boundaryHandleRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + width, y, boundaryHandleRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + width, y + height, boundaryHandleRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x, y + height, boundaryHandleRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+        img.src = `https://cdli.ucla.edu/dl/tn_photo/${pubId}.jpg`;
+        img.onload = function() {
+            draw();
+        };
+        img.onerror = function() {
+            console.log("Error loading image");
+            draw();
+        };
+    </script>
+</body>
+
+</html>
