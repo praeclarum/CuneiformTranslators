@@ -36,8 +36,8 @@ export async function onRequest(context) {
         // console.log();
     }
     catch (error) {
-        // console.log(error);
-        responseText = JSON.stringify({"error": error});
+        // console.log(error.message);
+        responseText = JSON.stringify({"error": error.message});
     }
 
     return new Response(responseText);
