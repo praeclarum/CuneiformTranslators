@@ -1,0 +1,92 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home</title>
+<style>
+    .languages-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+    .user-text {
+    }
+</style>
+</head>
+<body>
+    <div class="translate-ui">
+        <div class="languages-container">
+            <div class="user-text">
+                <p>Translate from:
+                <select id="fromLanguage">
+                    <option value="Akkadian">Akkadian</option>
+                    <option value="Sumerian">Sumerian</option>
+                </select></p>
+                <textarea id="fromText" rows="10" cols="40"></textarea>
+            </div>
+            <div class="user-text">
+                <p>Translate to:
+                <select id="toLanguage">
+                    <option value="English">English</option>
+                </select></p>
+                <textarea id="toText" rows="10" cols="40"></textarea>
+            </div>
+        </div>
+
+        <h2>Examples</h2>
+        <h3>Akkadian</h3>
+        <p>{d}a-szur_en gal_ musz-te-szer3 kisz-szat _dinger mesz_ na-din {gisz}gidri u3 a-ge-e mu-kin2 _man_-ti {d}en-lil2 be-lu _man_ gi-mir {d}a-nun-na-ki a-bu _dingir-mesz en kur kur_</p>
+    </div>
+
+    <script>
+        const $fromText = document.getElementById('fromText');
+        const $fromLanguage = document.getElementById('fromLanguage');
+        const $toText = document.getElementById('toText');
+
+        async function translate() {
+            const fromText = $fromText.value;
+            
+            const fromLanguage = $fromLanguage.value;
+            const queryText = `translate ${fromLanguage} to English: ${fromText}`;
+
+            // Call /api/translate
+            const request = fetch('/api/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "q": queryText,
+                }),
+            });
+
+            // alert(queryText);
+
+            const response = await request;
+            const responseJson = await response.json();
+
+            if (responseJson.hasOwnProperty("error")) {
+                $toText.classList.add("error");
+                $toText.value = responseJson.error;
+            }
+            else {
+                $toText.classList.remove("error");
+                $toText.value = JSON.stringify(responseJson);
+            }
+        }
+
+        // Throttle input changes to avoid too many requests
+        // using setTimeout to avoid blocking the UI
+        let timeout = null;
+        $fromText.addEventListener('input', function() {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            timeout = setTimeout(function() {
+                translate();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
