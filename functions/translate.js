@@ -8,7 +8,7 @@ async function query(data, apiToken) {
             body: JSON.stringify(data),
         }
     );
-    const result = await response.json();
+    const result = await response.text();//.json();
     return result;
 }
 
@@ -37,7 +37,9 @@ export async function onRequest(context) {
     }
     catch (error) {
         // console.log(error.message);
-        responseText = JSON.stringify({"error": error.message});
+        responseText = JSON.stringify({
+            "error": `${error.name}: ${error.message}\n${error.stack}`,
+        });
     }
 
     return new Response(responseText);
