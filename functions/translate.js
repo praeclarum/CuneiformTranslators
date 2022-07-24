@@ -25,8 +25,8 @@ export async function onRequest(context) {
 
     const apiToken = env.HUGGINGFACE_API_TOKEN;
 
-    const translationResult = await query("Can you please let us know more details about your ", apiToken);
-    
+    const translationResult = await query("translate Akkadian to English: {d}a-szur_en gal_ musz-te-szer3 kisz-szat _dinger mesz_ na-din {gisz}gidri u3 a-ge-e mu-kin2 _man_-ti {d}en-lil2 be-lu _man_ gi-mir {d}a-nun-na-ki a-bu _dingir-mesz en kur kur_", apiToken);
+
     console.log(JSON.stringify(translationResult));
 
     return new Response(JSON.stringify(translationResult));
