@@ -2,7 +2,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home</title>
+<title>Translator</title>
 <style>
     .languages-container {
         display: flex;
@@ -51,7 +51,7 @@
             const queryText = `translate ${fromLanguage} to English: ${fromText}`;
 
             // Call /api/translate
-            const request = fetch('/api/translate', {
+            const request = fetch('/translate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
