@@ -3,6 +3,12 @@ import requests
 import re
 import pandas as pd
 
+li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
+
+def looks_like_li(line, lang):
+    return li_start_re.match(line)
+
+
 class Publication():
     def __init__(self, id):
         self.id = id
@@ -21,6 +27,19 @@ class TextArea():
         return f"TextArea({repr(self.name)}, {repr(self.lines)})"
     def has_translations(self):
         return len(self.lines) > 0 and any(x.has_translations() for x in self.lines)
+    def lines_to_paragraphs(self, lang):
+        paragraphs = []
+        for iline, line in enumerate(self.lines):
+            if looks_like_li(line.text, lang):
+                paragraphs.append(("li", iline, iline+1))
+            else:
+                if len(paragraphs) > 0 and paragraphs[-1][0] == "p":
+                    p = paragraphs[-1]
+                    p = (p[0], p[1], p[2]+1)
+                    paragraphs[-1] = p
+                else:
+                    paragraphs.append(("p", iline, iline+1))
+        return paragraphs
     
 class TextLine():
     def __init__(self, number, text):
@@ -35,6 +54,7 @@ class TextLine():
             if len(v) > 0:
                 return True
         return False
+
     
 def parse_atf(atf):
     publications = []
@@ -290,4 +310,29 @@ def get_periods(raw_periods):
         return [get_period_from_year(x) for x in years]
 
 
+def wrap_paragraph(paragraph, lines, src_lang, wmax_num_tokens, tgt_lang, avg_src_chars_per_token = 1.8713256996006793, avg_tgt_chars_per_token = 2.577806274115267):
+    ptag, pline_start_index, pline_end_index = paragraph
+    wline_ranges = []
+    wline_tok_len = 0.0
+    
+    def start_new_line(pline_index):
+#         print("start", pline_index)
+        wline_ranges.append((pline_index, pline_index + 1))
+        
+    def append_line(pline_index):
+#         print("append", pline_index)
+        r = wline_ranges[-1]
+        if r[1] == pline_index:
+            wline_ranges[-1] = (r[0], r[1] + 1)
+        else:
+            print(f"Missing line: got {pline_index}, expected {r[1]}: {wline_ranges}")
 
+    for pline_index in range(pline_start_index, pline_end_index):
+        pline_num_toks = len(lines[pline_index].text) / avg_src_chars_per_token + 1.0
+        if len(wline_ranges) == 0 or (wline_tok_len + pline_num_toks > wmax_num_tokens):
+            start_new_line(pline_index)
+            wline_tok_len = 0.0
+        else:
+            append_line(pline_index)
+        wline_tok_len += pline_num_toks
+    return wline_ranges
