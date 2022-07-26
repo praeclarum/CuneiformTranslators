@@ -40,6 +40,34 @@ all_languages = {**old_languages, **transliterated_languages, **modern_languages
 
 language_codes = set(list(all_languages.keys()))
 
+replacements = [
+    ("ā", "a"),
+    ("Ā", "a"),
+    ("ḫ", "h"),
+    ("Ḫ", "H"),
+    ("ī", "i"),
+    ("Ī", "I"),
+#     ("î", "i"),
+#     ("Î", "I"),
+    ("ř", "r"),
+    ("Ř", "R"),
+    ("šš", "sh"),
+    ("š", "sh"),
+    ("Š", "Sh"),
+    ("ṣ", "sh"),
+    ("Ṣ", "Sh"),
+    ("ṭ", "t"),
+    ("Ṭ", "T"),
+    ("ū", "u"),
+    ("Ū", "U"),
+]
+
+def replace_unsupported(text):
+    r = text
+    for s, t in replacements:
+        r = r.replace(s, t)
+    return r
+
 cuneiform_unicode = json.loads(requests.get("https://github.com/darth-cheney/cuneiform-signs-unicode/raw/master/cuneiform-unicode.json").text)["signs"]
 
 cuneiform_unicode_replacements = { x["value"].lower(): x["character"] for x in cuneiform_unicode }
