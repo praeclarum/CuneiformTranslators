@@ -8,7 +8,7 @@ async function query(data, apiToken) {
             body: JSON.stringify(data),
         }
     );
-    const result = await response.text();//.json();
+    let result = await response.text();//.json();
     for (let pair of response.headers.entries()) {
         result += "\n" + pair[0] + ': ' + pair[1];
     }
