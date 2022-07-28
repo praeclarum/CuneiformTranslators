@@ -84,6 +84,20 @@ def get_all_translated_object_ids(project_zips, tqdm=lambda x: x):
         all_translated_ids.extend(get_project_translated_object_ids(p))
     return sorted(list(set(all_translated_ids)))
 
+def get_project_corpus_object_ids(project_zip_path):
+#     print(project_zip_path)
+    project_id = os.path.basename(project_zip_path).replace(".zip", "").replace("-", "/")
+    project_zip = zipfile.ZipFile(project_zip_path, "r")
+    result = [(project_id, x.filename.split("/")[-1].replace(".json", "")) for x in project_zip.filelist if "/corpusjson/" in x.filename and x.filename.endswith(".json")]
+#     print(result)
+    return result
+
+def get_all_corpus_object_ids(project_zips, tqdm=lambda x: x):
+    all_corpus_ids = []
+    for p in tqdm(project_zips):
+        all_corpus_ids.extend(get_project_corpus_object_ids(p))
+    return sorted(list(set(all_corpus_ids)))
+
 def load_project_corpus(project_zip_path):
     result = dict()
     project_zip = zipfile.ZipFile(project_zip_path, "r")
@@ -99,3 +113,16 @@ def load_project_corpus(project_zip_path):
 #         print(corpus.keys())
         result[corpus_file_info.filename] = corpus
     return result
+
+def download_object_translation(out_dir, project_id, object_id):
+    url = f"http://oracc.iaas.upenn.edu/{project_id}/{object_id}/html"
+    odir = f"{out_dir}/html/{object_id[:2]}"
+    out_path = f"{odir}/{object_id}.html"
+    if os.path.exists(out_path):
+        return out_path
+    os.makedirs(odir, exist_ok=True)
+    html_text = oracc.session.get(url).text
+    with open(out_path, "wt") as f:
+        f.write(html_text)
+    return out_path
+
