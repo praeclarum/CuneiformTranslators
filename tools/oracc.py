@@ -2,6 +2,7 @@ import os, sys, math
 import requests
 import json
 import shutil
+import zipfile
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 session = requests.Session()
@@ -59,3 +60,42 @@ def get_all_project_zips(out_dir, verbose=False, tqdm=lambda x: x):
     if len(new_ignores) > 0:
         print("ignore_project_ids =", repr(new_ignores))
     return paths
+
+def get_project_translated_object_ids(project_zip_path):
+    project_id = os.path.basename(project_zip_path).replace(".zip", "").replace("-", "/")
+    result = []
+    project_zip = zipfile.ZipFile(project_zip_path, "r")
+#     for f in project_zip.filelist:
+#         print(f)
+    metas = [x for x in project_zip.filelist if x.filename.endswith("metadata.json")]
+    if len(metas) != 1:
+        return result
+    with project_zip.open(metas[0], "r") as f:
+        meta = json.load(f)
+    formats = meta["formats"]
+    if "tr-en" not in formats:
+        return result
+    result = [(project_id, x) for x in formats["tr-en"]]
+    return result
+
+def get_all_translated_object_ids(project_zips, tqdm=lambda x: x):
+    all_translated_ids = []
+    for p in tqdm(project_zips):
+        all_translated_ids.extend(get_project_translated_object_ids(p))
+    return sorted(list(set(all_translated_ids)))
+
+def load_project_corpus(project_zip_path):
+    result = dict()
+    project_zip = zipfile.ZipFile(project_zip_path, "r")
+#     for f in project_zip.filelist:
+#         print(f)
+    corpi = [x for x in project_zip.filelist if "/corpusjson/" in x.filename and x.filename.endswith(".json")]
+    if len(corpi) == 0:
+        return result
+    for corpus_file_info in corpi:
+#         print(corpus_file_info)
+        with project_zip.open(corpus_file_info, "r") as f:
+            corpus = json.load(f)
+#         print(corpus.keys())
+        result[corpus_file_info.filename] = corpus
+    return result
