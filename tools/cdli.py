@@ -23,8 +23,9 @@ class TextArea():
     def __init__(self, name):
         self.name = name
         self.lines = list()
+        self.paragraphs = list()
     def __repr__(self):
-        return f"TextArea({repr(self.name)}, {repr(self.lines)})"
+        return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
     def has_translations(self):
         return len(self.lines) > 0 and any(x.has_translations() for x in self.lines)
     def lines_to_paragraphs(self, lang):
@@ -55,6 +56,19 @@ class TextLine():
                 return True
         return False
 
+class TextParagraph():
+    def __init__(self, start_line_index, end_line_index):
+        self.start_line_index = start_line_index
+        self.end_line_index = end_line_index
+        self.languages = dict()
+    def __repr__(self):
+        return f"TextParagraph({repr(self.start_line_index)}, {repr(self.end_line_index)}, {repr(self.languages)})"
+    def has_translations(self):
+        for k in self.languages:
+            v = self.languages[k]
+            if len(v) > 0:
+                return True
+        return False
     
 def parse_atf(atf):
     publications = []

@@ -3,6 +3,7 @@ import requests
 import json
 import shutil
 import zipfile
+from glob import glob
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 session = requests.Session()
@@ -14,7 +15,12 @@ CHUNK_SIZE = 16 * 1024
 
 ignore_project_ids = {'contrib/amarna', 'rinap/rinap5p1', 'cdli', 'cams/tlab', 'cams', 'arrim', 'cams/akno', 'cams/etana', 'cams/barutu', 'amgg', 'lovelyrics', 'ctij', 'lacost', 'contrib', 'cams/selbi', 'cams/ludlul', 'contrib/lambert', 'akklove', 'cams/anzu', 'pnao', 'rimanum'}
 
-def download_project_zip(project_id, out_dir, verbose=True):
+def get_project_zip_path(project_id, oracc_dir):
+    project_zip_name = project_id.replace('/', '-') + ".zip"
+    ofile = f"{oracc_dir}/{project_zip_name}"
+    return ofile
+
+def download_project_zip(project_id, oracc_dir, verbose=True):
     
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -22,8 +28,8 @@ def download_project_zip(project_id, out_dir, verbose=True):
     url = "http://build-oracc.museum.upenn.edu/json/" + project_zip_name
     if verbose:
         print(url)
-    tmp_dir = f"{out_dir}/tmp"
-    ofile = f"{out_dir}/{project_zip_name}"
+    tmp_dir = f"{oracc_dir}/tmp"
+    ofile = get_project_zip_path(project_id, oracc_dir)
     if os.path.exists(ofile):
         return ofile
     os.makedirs(tmp_dir, exist_ok=True)
@@ -41,20 +47,20 @@ def download_project_zip(project_id, out_dir, verbose=True):
     else:
         print(url + " does not exist.")
         return None
-
-def get_all_project_zips(out_dir, verbose=False, tqdm=lambda x: x):
+    
+def get_all_project_zips(oracc_dir, verbose=False, tqdm=lambda x: x):
     project_ids = get_project_ids()
     paths = []
     new_ignores = set()
     for p in tqdm(project_ids):
         if p in ignore_project_ids:
             continue
-        path = download_project_zip(p, out_dir, verbose=verbose)
+        path = download_project_zip(p, oracc_dir, verbose=verbose)
         if path is not None:
             paths.append(path)
         else:
             new_ignores.add(p)
-    tmp_dir = f"{out_dir}/tmp"
+    tmp_dir = f"{oracc_dir}/tmp"
     if os.path.exists(tmp_dir):
         os.rmdir(tmp_dir)
     if len(new_ignores) > 0:
@@ -98,7 +104,8 @@ def get_all_corpus_object_ids(project_zips, tqdm=lambda x: x):
         all_corpus_ids.extend(get_project_corpus_object_ids(p))
     return sorted(list(set(all_corpus_ids)))
 
-def load_project_corpus(project_zip_path):
+def load_project_corpus(project_id, oracc_dir):
+    project_zip_path = get_project_zip_path(project_id, oracc_dir)
     result = dict()
     project_zip = zipfile.ZipFile(project_zip_path, "r")
 #     for f in project_zip.filelist:
@@ -114,15 +121,20 @@ def load_project_corpus(project_zip_path):
         result[corpus_file_info.filename] = corpus
     return result
 
-def download_object_translation(out_dir, project_id, object_id):
+def download_object_translation(oracc_dir, project_id, object_id):
     url = f"http://oracc.iaas.upenn.edu/{project_id}/{object_id}/html"
-    odir = f"{out_dir}/html/{object_id[:2]}"
+    odir = f"{oracc_dir}/html/{object_id[:2]}"
     out_path = f"{odir}/{object_id}.html"
     if os.path.exists(out_path):
         return out_path
     os.makedirs(odir, exist_ok=True)
-    html_text = oracc.session.get(url).text
+    html_text = session.get(url).text
     with open(out_path, "wt") as f:
         f.write(html_text)
     return out_path
+
+def get_all_object_html_paths(oracc_dir):
+    object_htmls = {os.path.basename(x).replace(".html",""): x for x in glob(f"{oracc_dir}/html/**/*.html", recursive=True)}
+    return object_htmls
+    
 

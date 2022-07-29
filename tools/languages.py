@@ -1,5 +1,8 @@
 import json
 import requests
+import re
+
+
 
 old_languages = {
     "akk": "Akkadian",
@@ -10,6 +13,7 @@ old_languages = {
     "grc": "Greek",
     "peo": "Old Persian",
     "ug": "Ugaritic",
+    "xur": "Urartian",
 }
 transliterated_languages = {
     "akkts": "Akkadian",
@@ -40,9 +44,11 @@ all_languages = {**old_languages, **transliterated_languages, **modern_languages
 
 language_codes = set(list(all_languages.keys()))
 
-replacements = [
+unicode_en_to_ascii_en_replacements = [
     ("ā", "a"),
     ("Ā", "a"),
+    ("ŋ", "g"),
+    ("Ŋ", "G"),
     ("ḫ", "h"),
     ("Ḫ", "H"),
     ("ī", "i"),
@@ -62,9 +68,39 @@ replacements = [
     ("Ū", "U"),
 ]
 
-def replace_unsupported(text):
+unicode_atf_to_ascii_atf_replacements = [
+    ("⸢", ""),
+    ("⸣", "#"),
+    ("ʾ", "'"),
+    ("ŋ", "g"),
+    ("Ŋ", "G"),
+    ("ḫ", "h"),
+    ("Ḫ", "H"),
+    ("š", "sz"),
+    ("Š", "SZ"),
+    ("ṣ", "s,"),
+    ("Ṣ", "S,"),
+    ("ś" ,"s'"),
+    ("Ś", "S'"),
+    ("ṭ", "t,"),
+    ("Ṭ", "T,"),
+    ("ₓ", "x2"),
+    ("ₓ", "X2"),
+    ("₀", "0"),
+    ("₁", "1"),
+    ("₂", "2"),
+    ("₃", "3"),
+    ("₄", "4"),
+    ("₅", "5"),
+    ("₆", "6"),
+    ("₇", "7"),
+    ("₈", "8"),
+    ("₉", "9"),
+]
+
+def replace_unsupported_en(text):
     r = text
-    for s, t in replacements:
+    for s, t in unicode_en_to_ascii_en_replacements:
         r = r.replace(s, t)
     return r
 
@@ -94,3 +130,15 @@ def cuneiform_text_to_unicode(atf_text, language):
                 lemmas[j] = cuneiform_unicode_replacements[lemma]
         words[i] = "".join(lemmas)
     return " ".join(words)
+
+
+underline_sign_names_re = re.compile(r"\b([A-Z][A-Z0-9#\. &]*[A-Z0-9#])")
+
+def underline_sign_names_repl(match):
+    return '_' + match.group(1).lower() + '_'
+    
+def underline_sign_names(text):
+#     return text
+    return underline_sign_names_re.sub(underline_sign_names_repl, text).replace(".", "-")
+
+
