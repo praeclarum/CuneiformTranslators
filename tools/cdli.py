@@ -356,3 +356,22 @@ def wrap_paragraph(paragraph, lines, src_lang, wmax_num_tokens, tgt_lang, avg_sr
             append_line(pline_index)
         wline_tok_len += pline_num_toks
     return wline_ranges
+
+def print_pub_paragraphs(pub, tgt_len="en"):
+    for a in pub.text_areas:
+        print(pub.id, a.name)
+        for p in a.paragraphs:
+            lines = a.lines[p.start_line_index:p.end_line_index]
+            cuneiform = " ".join(x.text for x in lines)
+            tgt = p.languages[tgt_len]
+            print("   >>>>", cuneiform)
+            print("   <<<<", tgt)
+        print("")
+        
+def print_pub_lines(pub, tgt_len="en"):
+    for a in pub.text_areas:
+        print(pub.id, a.name)
+        for line in a.lines:
+            print(line.text)
+        print("")
+        

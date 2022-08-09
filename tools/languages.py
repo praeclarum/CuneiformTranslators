@@ -2,8 +2,6 @@ import json
 import requests
 import re
 
-
-
 old_languages = {
     "akk": "Akkadian",
     "sux": "Sumerian",
@@ -98,6 +96,70 @@ unicode_atf_to_ascii_atf_replacements = [
     ("₉", "9"),
 ]
 
+unicode_atf_to_ascii_atf_token_replacements = {
+    "bán": "ban2",
+    "buru": "bur'u",
+    "èše": "esze3",
+    "géš": "gesz2",
+    "šár": "szar2",
+    "bùr": "bur3",
+    "GÁN": "GAN2",
+    "sá": "sa2",
+    "sìla": "sila3",
+    "lú": "lu2",
+    "gur₇": "guru7",
+    "taka₄": "tak4",
+    "líd": "lid2",
+    "zíd": "zi3",
+    "teŋ₄": "ti",
+    "šaru": "szar'u",
+    "úš": "us2",
+    "kùš": "kusz3",
+    "kug": "ku3",
+    "sig₁₀": "si3",
+    "zid₂": "zi3",
+    "gud": "gu4",
+    "bí": "bi2",
+    "dug₄": "du11",
+    "diŋir": "dingir",
+    "àm": "am3",
+    "íb": "ib2",
+    "íl": "il2",
+    "su₁₃": "su3",
+    "GIR₃": "GIRI3",
+    "ŋiri₂": "gir2",
+    "IR₃": "ARAD2",
+    "ti₇": "te",
+    "giggi": "kukku5",
+    "sag₁₀": "saga",
+    "gurum": "gur2",
+    "aḫ₃": "had2",
+    "tu₄": "tum",
+    "gab₂": "kab",
+    "zid": "zi",
+    "tum₁₂": "tu",
+    "GEME₂": "dam",
+    "šag₄": "sza3",
+    "kud": "ku5",
+#     "bu": "pu",
+#     "pu": "bu",
+}
+
+cdli_inconsistencies = {
+    "sumun2": "sun2",
+}
+
+blank_string = [
+    "(blank)",
+    "($ blank $)",
+    "($ blank space $)",
+    "( space )",
+]
+
+li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
+
+underline_sign_names_re = re.compile(r"\b([A-Z][A-Z0-9#\. &]*[A-Z0-9#])")
+
 def replace_unsupported_en(text):
     r = text
     for s, t in unicode_en_to_ascii_en_replacements:
@@ -131,9 +193,6 @@ def cuneiform_text_to_unicode(atf_text, language):
         words[i] = "".join(lemmas)
     return " ".join(words)
 
-
-underline_sign_names_re = re.compile(r"\b([A-Z][A-Z0-9#\. &]*[A-Z0-9#])")
-
 def underline_sign_names_repl(match):
     return '_' + match.group(1).lower() + '_'
     
@@ -144,12 +203,6 @@ def underline_sign_names(text):
 def remove_extraneous_space(s):
     return " ".join(x for x in s.split(" ") if len(x) > 0)
 
-blank_string = [
-    "(blank)",
-    "($ blank $)",
-    "($ blank space $)",
-    "( space )",
-]
 def remove_blanks(s):
     for b in blank_string:
         s = s.replace(b, "")
@@ -165,8 +218,16 @@ def target_ok(target_text):
         return False
     return True
 
-li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
-
 def looks_like_li(line, lang):
     return li_start_re.match(line)
 
+def unicode_words_to_normalized_ascii(tokens):
+    def proc_token(token):
+        if token in unicode_atf_to_ascii_atf_token_replacements:
+            return unicode_atf_to_ascii_atf_token_replacements[token]
+        for s, t in unicode_atf_to_ascii_atf_replacements:
+            token = token.replace(s, t)
+        return token
+    retokenized = "".join(proc_token(x) for x in tokens)
+    underlined = underline_sign_names(retokenized).strip()
+    return underlined
