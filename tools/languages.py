@@ -141,4 +141,32 @@ def underline_sign_names(text):
 #     return text
     return underline_sign_names_re.sub(underline_sign_names_repl, text).replace(".", "-")
 
+def remove_extraneous_space(s):
+    return " ".join(x for x in s.split(" ") if len(x) > 0)
+
+blank_string = [
+    "(blank)",
+    "($ blank $)",
+    "($ blank space $)",
+    "( space )",
+]
+def remove_blanks(s):
+    for b in blank_string:
+        s = s.replace(b, "")
+    return s
+
+def dashes_to_dots(s):
+    return s.replace("[---]", "[...]").replace("[---", "[...").replace("---]", "...]").replace("---", "...")
+
+def target_ok(target_text):
+    if len(target_text) == 0:
+        return False
+    if len(set(target_text.replace(" ", ""))) < 2:
+        return False
+    return True
+
+li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
+
+def looks_like_li(line, lang):
+    return li_start_re.match(line)
 

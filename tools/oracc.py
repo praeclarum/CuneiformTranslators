@@ -5,6 +5,9 @@ import shutil
 import zipfile
 from glob import glob
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from collections import defaultdict
+
+import languages
 
 session = requests.Session()
 
@@ -136,5 +139,78 @@ def download_object_translation(oracc_dir, project_id, object_id):
 def get_all_object_html_paths(oracc_dir):
     object_htmls = {os.path.basename(x).replace(".html",""): x for x in glob(f"{oracc_dir}/html/**/*.html", recursive=True)}
     return object_htmls
-    
 
+old_langs = {languages.all_languages[k]: k for k in languages.old_languages}
+    
+def load_project_pub_ids(project_id, oracc_dir):
+    project_zip_path = get_project_zip_path(project_id, oracc_dir)
+    result = set()
+    corpi = dict()
+    if not os.path.exists(project_zip_path):
+        return result, corpi
+    project_zip = zipfile.ZipFile(project_zip_path, "r")
+    
+    catalogs = [x for x in project_zip.filelist if x.filename.endswith("catalogue.json")]
+    if len(catalogs) != 1:
+        return result, corpi
+    with project_zip.open(catalogs[0], "r") as f:
+        catalog = json.load(f)
+    if "members" not in catalog:
+        return result, corpi
+    members = catalog["members"]
+    result = set((x, old_langs[members[x]["language"]]) for x in members.keys() if "language" in members[x] and members[x]["language"] in old_langs)
+    
+    corpus_files = [x for x in project_zip.filelist if "/corpusjson/" in x.filename and x.filename.endswith(".json")]
+    def find_corpus_langs(o, langs):
+        if isinstance(o, dict):
+            if "lang" in o:
+                lang = o["lang"].split("-")[0]
+                langs[lang] += 1
+            elif "exolng" in o:
+                lang = o["exolng"].split("-")[0]
+                langs[lang] += 1
+            else:
+                for v in o.values():
+                    find_corpus_langs(v, langs)
+        elif isinstance(o, list):
+            for v in o:
+                find_corpus_langs(v, langs)
+    def guess_corpus_file_lang(file):
+        langs = defaultdict(lambda: 0)
+        with project_zip.open(file, "r") as f:
+            corpus = json.load(f)
+            find_corpus_langs(corpus, langs)
+#         langs = sorted([(x, langs[x]) for x in langs.keys()], key=lambda y:-y[1])
+#         print(langs)
+        lang = "akk" if "akk" in langs else ("sux" if "sux" in langs else None)
+        if lang is None:
+            if len(langs) > 0:
+#                 print(langs)
+                pass
+            else:
+#                 print("No langs", project_zip_path, file.filename)
+                pass
+        return corpus, lang
+      
+    for cf in corpus_files:
+        try:
+            c_id = cf.filename.split("/")[-1].replace(".json", "")
+            c, c_lang = guess_corpus_file_lang(cf)
+            if c_lang is not None:
+                corpi[c_id] = {"corpus": c, "lang": c_lang}
+                result.add((c_id, c_lang))
+        except json.decoder.JSONDecodeError:
+            print("Error:", sys.exc_info())
+    return result, corpi
+
+def load_all_project_pub_ids(oracc_dir, tqdm=lambda x: x):
+    project_ids = get_project_ids()
+    pub_ids = set()
+    corpi = dict()
+    for pid in tqdm(project_ids):
+        ppub_ids, pcorpi = load_project_pub_ids(pid, oracc_dir)
+        pub_ids = pub_ids.union(ppub_ids)
+        for k in pcorpi.keys():
+            corpi[k] = pcorpi[k]
+    pub_ids = sorted(list(set(pub_ids)))
+    return pub_ids, corpi

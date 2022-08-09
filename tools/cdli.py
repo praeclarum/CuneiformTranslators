@@ -3,11 +3,7 @@ import requests
 import re
 import pandas as pd
 
-li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
-
-def looks_like_li(line, lang):
-    return li_start_re.match(line)
-
+import languages
 
 class Publication():
     def __init__(self, id):
@@ -28,19 +24,28 @@ class TextArea():
         return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
     def has_translations(self):
         return len(self.lines) > 0 and any(x.has_translations() for x in self.lines)
-    def lines_to_paragraphs(self, lang):
-        paragraphs = []
+    def lines_to_paragraphs(self, src_lang, tgt_lang, max_length=128):
+        self.paragraphs = list()
+        plen = 0
         for iline, line in enumerate(self.lines):
-            if looks_like_li(line.text, lang):
-                paragraphs.append(("li", iline, iline+1))
+            line_len = len(line.text)
+            if languages.looks_like_li(line.text, src_lang):
+                self.paragraphs.append(TextParagraph(iline, iline+1, "li"))
+                plen = line_len
             else:
-                if len(paragraphs) > 0 and paragraphs[-1][0] == "p":
-                    p = paragraphs[-1]
-                    p = (p[0], p[1], p[2]+1)
-                    paragraphs[-1] = p
+                if len(self.paragraphs) > 0 and self.paragraphs[-1].tag == "p" and plen + line_len < max_length:
+                    p = self.paragraphs[-1]
+                    p.end_line_index += 1
+                    plen += line_len
                 else:
-                    paragraphs.append(("p", iline, iline+1))
-        return paragraphs
+                    self.paragraphs.append(TextParagraph(iline, iline+1))
+                    plen = line_len
+        if any(l for l in self.lines if tgt_lang in l.languages):
+            for p in self.paragraphs:
+                lines = self.lines[p.start_line_index:p.end_line_index]
+                tlines = [(x.languages[tgt_lang] if tgt_lang in x.languages else "") for x in lines]
+                p.languages[tgt_lang] = languages.remove_extraneous_space(" ".join(tlines))
+        return self.paragraphs
     
 class TextLine():
     def __init__(self, number, text):
@@ -57,9 +62,10 @@ class TextLine():
         return False
 
 class TextParagraph():
-    def __init__(self, start_line_index, end_line_index):
+    def __init__(self, start_line_index, end_line_index, tag="p"):
         self.start_line_index = start_line_index
         self.end_line_index = end_line_index
+        self.tag = tag
         self.languages = dict()
     def __repr__(self):
         return f"TextParagraph({repr(self.start_line_index)}, {repr(self.end_line_index)}, {repr(self.languages)})"
