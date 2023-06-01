@@ -6,20 +6,22 @@ import pandas as pd
 import languages
 
 class Publication():
-    def __init__(self, id):
+    def __init__(self, id, language=None, text_areas=None, genre=None, period=None):
         self.id = id
-        self.text_areas = list()
-        self.language = None
+        self.text_areas = list() if text_areas is None else text_areas
+        self.language = language
+        self.genre = genre
+        self.period = period
     def __repr__(self):
         return f"Publication({repr(self.id)}, {repr(self.language)}, {repr(self.text_areas)})"
     def has_translations(self):
         return any(x.has_translations() for x in self.text_areas)
     
 class TextArea():
-    def __init__(self, name):
+    def __init__(self, name, lines=None, paragraphs=None):
         self.name = name
-        self.lines = list()
-        self.paragraphs = list()
+        self.lines = list() if lines is None else lines
+        self.paragraphs = list() if paragraphs is None else paragraphs
     def __repr__(self):
         return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
     def has_translations(self):
@@ -46,12 +48,35 @@ class TextArea():
                 tlines = [(x.languages[tgt_lang] if tgt_lang in x.languages else "") for x in lines]
                 p.languages[tgt_lang] = languages.remove_extraneous_space(" ".join(tlines))
         return self.paragraphs
-    
+    def paragraphs_to_lines(a, max_line_length=512):
+        psrcs = list()
+        for p in a.paragraphs:
+            srcs = list()
+            psrcs.append(srcs)
+            end_line_index = p.end_line_index
+            start_line_index = p.start_line_index
+            src_lines = [x.text for x in a.lines[start_line_index:end_line_index]]
+            src = " ".join(src_lines)
+            while end_line_index > start_line_index + 1 and len(src) > max_line_length:
+                end_line_index -= 1
+                src_lines = [x.text for x in a.lines[start_line_index:end_line_index]]
+                src = " ".join(src_lines)
+            src = languages.remove_blanks(src)
+            src = languages.underline_sign_names(src)
+            src = languages.dashes_to_dots(src)                        
+            src = languages.remove_extraneous_space(src)
+            if len(src) > 0 and src not in srcs:
+                src_len = len(src)
+                if src_len > max_line_length:
+                    max_line_length = src_len
+                srcs.append((start_line_index, end_line_index, src))
+        return psrcs
+
 class TextLine():
-    def __init__(self, number, text):
+    def __init__(self, number, text, languages=None):
         self.number = number
         self.text = text
-        self.languages = dict()
+        self.languages = dict() if languages is None else languages
     def __repr__(self):
         return f"TextLine({repr(self.number)}, {repr(self.text)}, {repr(self.languages)})"
     def has_translations(self):
@@ -62,11 +87,11 @@ class TextLine():
         return False
 
 class TextParagraph():
-    def __init__(self, start_line_index, end_line_index, tag="p"):
+    def __init__(self, start_line_index, end_line_index, tag="p", languages=None):
         self.start_line_index = start_line_index
         self.end_line_index = end_line_index
         self.tag = tag
-        self.languages = dict()
+        self.languages = dict() if languages is None else languages
     def __repr__(self):
         return f"TextParagraph({repr(self.start_line_index)}, {repr(self.end_line_index)}, {repr(self.languages)})"
     def has_translations(self):
@@ -75,6 +100,62 @@ class TextParagraph():
             if len(v) > 0:
                 return True
         return False
+    
+def text_area_to_json(a):
+    return {
+        "name": a.name,
+        "lines": [text_line_to_json(a) for a in a.lines],
+        "paragraphs": [text_paragraph_to_json(a) for a in a.paragraphs],
+    }
+def text_line_to_json(line):
+    return {
+        "number": line.number,
+        "text": line.text,
+        "languages": line.languages,
+    }
+def text_paragraph_to_json(para):
+    return {
+        "start_line_index": para.start_line_index,
+        "end_line_index": para.end_line_index,
+        "tag": para.tag,
+        "languages": para.languages,
+    }
+def pub_to_json(pub):
+    return {
+        "id": pub.id,
+        "language": pub.language,
+        "text_areas": [text_area_to_json(a) for a in pub.text_areas],
+        "genre": pub.genre,
+        "period": pub.period,
+    }
+
+def json_to_pub(json):
+    return Publication(
+        json["id"],
+        json["language"],
+        [json_to_text_area(a) for a in json["text_areas"]],
+        json["genre"] if "genre" in json else None,
+        json["period"] if "period" in json else None,
+    )
+def json_to_text_area(json):
+    return TextArea(
+        json["name"],
+        [json_to_text_line(a) for a in json["lines"]],
+        [json_to_text_paragraph(a) for a in json["paragraphs"]],
+    )
+def json_to_text_line(json):
+    return TextLine(
+        json["number"],
+        json["text"],
+        json["languages"],
+    )
+def json_to_text_paragraph(json):
+    return TextParagraph(
+        json["start_line_index"],
+        json["end_line_index"],
+        json["tag"],
+        json["languages"],
+    )
     
 def parse_atf(atf):
     publications = []
@@ -375,3 +456,11 @@ def print_pub_lines(pub, tgt_len="en"):
             print(line.text)
         print("")
         
+def text_area_is_translated(pub, text_area, tgt_lang):
+    for line in text_area.lines:
+        if tgt_lang in line.languages:
+            return True
+    return False
+
+def pub_is_translated(pub, tgt_lang):
+    return any(x for x in pub.text_areas if text_area_is_translated(pub, x, tgt_lang))

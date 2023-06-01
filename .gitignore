@@ -2,6 +2,7 @@ node_modules
 package-lock.json
 package.json
 /data/cdli_photo_annotations
+/data/oracc_pubs.json
 /dist
 /tools/tokenizer_training_data.txt
 /tools/mweb.py
