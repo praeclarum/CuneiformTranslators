@@ -228,8 +228,11 @@ def load_html(path):
 def load_html_for_object_id(object_id, oracc_dir):
     return load_html(get_all_object_html_paths(oracc_dir)[object_id])
 
-def get_object_id_pub(object_id, oracc_dir):
+def get_object_id_pub(object_id, corpus, oracc_dir):
     pub = cdli.Publication(object_id)
+
+    project_id = corpus["project"]
+    pub.src_url = f"http://oracc.museum.upenn.edu/{project_id}/corpus"
     
     surface = ""
     column = ""

@@ -6,7 +6,7 @@ import pandas as pd
 import languages
 
 class Publication():
-    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None):
+    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None, src_url=None, src_link=None):
         self.id = id
         self.text_areas = list() if text_areas is None else text_areas
         self.language = language
@@ -14,6 +14,7 @@ class Publication():
         self.period = period
         self.object_type = object_type
         self.translation_source = translation_source
+        self.src_url = src_url
     def __repr__(self):
         return f"Publication({repr(self.id)}, {repr(self.language)}, {repr(self.text_areas)})"
     def has_translations(self):
@@ -130,6 +131,7 @@ def pub_to_json(pub):
         "genre": pub.genre,
         "period": pub.period,
         "object_type": pub.object_type,
+        "src_url": pub.src_url,
     }
 
 def json_to_pub(json):
@@ -140,6 +142,7 @@ def json_to_pub(json):
         json["genre"] if "genre" in json else None,
         json["period"] if "period" in json else None,
         json["object_type"] if "object_type" in json else None,
+        json["src_url"] if "src_url" in json else None,
     )
 def json_to_text_area(json):
     return TextArea(

@@ -23,7 +23,7 @@ class CDLI(Corpus):
         return transliterated_cdli_index
 
 class ORACC(Corpus):
-    def __init__(self, oracc_dir, download=False, tqdm=tqdm):
+    def __init__(self, oracc_dir, tqdm=tqdm):
         super().__init__("oracc")
         json_path = "../data/oracc_pubs.json"
         if os.path.exists(json_path):
@@ -35,16 +35,19 @@ class ORACC(Corpus):
         # project_zips = oracc.get_all_project_zips(oracc_dir, verbose=False, tqdm=tqdm)
         # all_corpus_object_ids = oracc.get_all_corpus_object_ids(project_zips[:], tqdm=tqdm)
         oracc_pub_ids_and_langs, transliterated_oracc_corpi = oracc.load_all_project_pub_ids(oracc_dir, tqdm=tqdm)
+        # self.transliterated_oracc_corpi = transliterated_oracc_corpi
         transliterated_oracc_pub_ids = set(transliterated_oracc_corpi.keys())
         transliterated_oracc_pids_and_oids = \
             [(x["corpus"]["project"], x["corpus"]["textid"]) for x in transliterated_oracc_corpi.values()]
-        if download:
-            for pid, oid in tqdm(transliterated_oracc_pids_and_oids[:]):
-                tpath = oracc.download_object_translation(oracc_dir, pid, oid)
+        for pid, oid in tqdm(transliterated_oracc_pids_and_oids[:]):
+            tpath = oracc.download_object_translation(oracc_dir, pid, oid)
         self.oracc_transliterated_pubs = dict()
         for pid in tqdm(transliterated_oracc_pub_ids):
-            p = oracc.get_object_id_pub(pid, oracc_dir)
+            corpus = transliterated_oracc_corpi[pid]["corpus"]
+            p = oracc.get_object_id_pub(pid, corpus, oracc_dir)
             self.oracc_transliterated_pubs[pid] = p
+        with open(json_path, "w") as f:
+            json.dump({p.id: cdli.pub_to_json(p) for p in self.oracc_transliterated_pubs.values()}, f)
     def get_pubs_with_lang(self, src_lang):
         transliterated_oracc_index = {x.id: x for x in self.oracc_transliterated_pubs.values() if x.language == src_lang}
         return transliterated_oracc_index
