@@ -6,12 +6,14 @@ import pandas as pd
 import languages
 
 class Publication():
-    def __init__(self, id, language=None, text_areas=None, genre=None, period=None):
+    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None):
         self.id = id
         self.text_areas = list() if text_areas is None else text_areas
         self.language = language
         self.genre = genre
         self.period = period
+        self.object_type = object_type
+        self.translation_source = translation_source
     def __repr__(self):
         return f"Publication({repr(self.id)}, {repr(self.language)}, {repr(self.text_areas)})"
     def has_translations(self):
@@ -25,7 +27,7 @@ class TextArea():
     def __repr__(self):
         return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
     def has_translations(self):
-        return len(self.lines) > 0 and any(x.has_translations() for x in self.lines)
+        return len(self.lines) > 0 and (any(x.has_translations() for x in self.lines) or any(x.has_translations() for x in self.paragraphs))
     def lines_to_paragraphs(self, src_lang, tgt_lang, max_length=128):
         self.paragraphs = list()
         plen = 0
@@ -127,6 +129,7 @@ def pub_to_json(pub):
         "text_areas": [text_area_to_json(a) for a in pub.text_areas],
         "genre": pub.genre,
         "period": pub.period,
+        "object_type": pub.object_type,
     }
 
 def json_to_pub(json):
@@ -136,6 +139,7 @@ def json_to_pub(json):
         [json_to_text_area(a) for a in json["text_areas"]],
         json["genre"] if "genre" in json else None,
         json["period"] if "period" in json else None,
+        json["object_type"] if "object_type" in json else None,
     )
 def json_to_text_area(json):
     return TextArea(
@@ -227,8 +231,8 @@ def merge_atf_with_catalog(atf, cat, tqdm=lambda x: x):
             continue
         if pid[-1] == "=":
             pid = pid[:-1]
-        pid = int(pid[1:])
-        meta = cat[cat["id_text"]==pid]
+        id_text = int(pid[1:])
+        meta = cat[cat["id_text"]==id_text]
         if len(meta) != 1:
             continue
         pub.id = pid
@@ -310,11 +314,15 @@ def get_genre(x):
     return "other-genre"
 
 def get_genres(gs):
+    if gs is None:
+        return set()
     return {get_genre(y) for x in gs.split(";") for y in x.split(",")}
 
 
 
 def get_years(raw_periods):
+    if raw_periods is None:
+        return []
     years = []
     matches = re.findall(r"(\d+)\s*(BC|AD)?\s*([-–]\s*(\d+)\s*(BC|AD))?", raw_periods)
     for syear, sera, end, eyear, eera in matches:
