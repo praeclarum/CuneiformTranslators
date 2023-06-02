@@ -273,6 +273,8 @@ def sanitize_object_type(x):
     return str(x).lower().replace(" (see object remarks)","").replace(" (not impression)", "").replace(" & envelope", "").replace(" in envelope", "").replace("prismatic cylinder", "prism").strip()
 
 def get_object_type(x):
+    if x is None:
+        return "other-object"
     x = sanitize_object_type(x)
     if x == "other":
         return "other-object"
@@ -309,6 +311,8 @@ genres = {
 }
 
 def get_genre(x):
+    if x is None:
+        return "other-genre"
     g = str(x).lower().replace("?","").replace("(see subgenre)","").replace("(modern)", "").replace("(seal)", "").replace("/", "-").strip()
     if g == "other":
         return "other-genre"
@@ -400,7 +404,7 @@ period_from_period_slug = {x[2]: x[1] for x in periods}
 def get_period_from_year(year):
     if year in period_from_year:
         return period_from_year[year]
-    return "other-period"
+    return "Other"
 
 def sanitize_period(y):
     p = y.replace("?", "").replace("(modern)","").replace("fake (ancient)", "Fake").strip()
@@ -411,6 +415,8 @@ def sanitize_period(y):
     return p
 
 def get_periods(raw_periods):
+    if raw_periods is None:
+        return ["Other"]
     years = get_years(raw_periods)
     if len(years) == 0:
         periods = [sanitize_period(y) for z in raw_periods.split(" or ") for y in z.split(";")]
