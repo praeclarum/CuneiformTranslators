@@ -67,3 +67,12 @@ class ORACC(Corpus):
     def get_pubs_with_lang(self, src_lang):
         transliterated_oracc_index = {x.id: x for x in self.oracc_pubs.values() if x.language == src_lang}
         return transliterated_oracc_index
+
+def merge_corpus_pubs(pubss, supported_langs):
+    all_pubs = dict()
+    for corpus, pubs in pubss:
+        for p in pubs:
+            if p.language in supported_langs:
+                p.corpus = corpus
+                all_pubs[p.id] = p
+    return all_pubs
