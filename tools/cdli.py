@@ -6,7 +6,7 @@ import pandas as pd
 import languages
 
 class Publication():
-    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None, src_url=None, src_link=None):
+    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None, src_url=None):
         self.id = id
         self.text_areas = list() if text_areas is None else text_areas
         self.language = language
@@ -140,10 +140,11 @@ def json_to_pub(json):
         json["id"],
         json["language"],
         [json_to_text_area(a) for a in json["text_areas"]],
-        json["genre"] if "genre" in json else None,
-        json["period"] if "period" in json else None,
-        json["object_type"] if "object_type" in json else None,
-        json["src_url"] if "src_url" in json else None,
+        genre=json["genre"] if "genre" in json else None,
+        period=json["period"] if "period" in json else None,
+        object_type=json["object_type"] if "object_type" in json else None,
+        src_url=json["src_url"] if "src_url" in json else None,
+        translation_source=json["translation_source"] if "translation_source" in json else None,
     )
 def json_to_text_area(json):
     return TextArea(
@@ -379,6 +380,7 @@ periods = [
     ((626, 'BC', 539, 'BC'), 'Neo-Babylonian', 'neo-babylonian'),
     ((547, 'BC', 331, 'BC'), 'Achaemenid', 'achaemenid'),
     ((323, 'BC', 63, 'BC'), 'Hellenistic', 'hellenistic'),
+    ((312, 'BC', 63, 'BC'), 'Seleucid', 'seleucid'),
     ((247, 'BC', 224, 'AD'), 'Parthian', 'parthian'),
     ((224, 'AD', 641, 'AD'), 'Sassanian', 'sassanian'),
     ((3000, 'AD', 0, ''), 'Other', 'other-period'),
@@ -411,7 +413,17 @@ def sanitize_period(y):
     p = y.replace("?", "").replace("(modern)","").replace("fake (ancient)", "Fake").strip()
     if p == "modern" or p == "fake" or p == "copy":
         p = "Fake"
-    elif p == "uncertain" or p == "nan":
+    elif p == "uncertain" or p == "nan" or p == "Uncertain":
+        p = "Other"
+    elif p == "Lagaš II":
+        p = "Lagash II"
+    elif p == "Early Dynastic":
+        p = "ED I-II"
+    elif p == "9th century" or p == "9th/8th century" or p == "8th century":
+        p = "Other"
+    elif p == "Urartian":
+        p = "Other"
+    elif p == "Hittite":
         p = "Other"
     return p
 
