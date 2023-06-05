@@ -181,7 +181,7 @@ def load_project_pub_ids(project_id, oracc_dir):
         elif isinstance(o, list):
             for v in o:
                 find_corpus_langs(v, langs)
-    def guess_corpus_file_lang(file):
+    def read_corpus(file):
         langs = defaultdict(lambda: 0)
         with project_zip.open(file, "r") as f:
             corpus = json.load(f)
@@ -201,9 +201,19 @@ def load_project_pub_ids(project_id, oracc_dir):
     for cf in corpus_files:
         try:
             c_id = cf.filename.split("/")[-1].replace(".json", "")
-            c, c_lang = guess_corpus_file_lang(cf)
+            if c_id not in members:
+                # print(f"Corpus {c_id} not in members")
+                # print("catalogs", catalogs)
+                # print("members", members)
+                catalog_info = {}
+            else:
+                catalog_info = members[c_id]
+            cat_lang = old_langs[catalog_info["language"]] if "language" in catalog_info and catalog_info["language"] in old_langs else None
+            # print(c_id, cat_lang)
+            c, guess_lang = read_corpus(cf)
+            c_lang = cat_lang if cat_lang is None else guess_lang
             if c_lang is not None:
-                corpi[c_id] = {"corpus": c, "lang": c_lang}
+                corpi[c_id] = {"corpus": c, "lang": c_lang, "catalog_info": catalog_info}
                 result.add((c_id, c_lang))
         except json.decoder.JSONDecodeError:
             print("Error:", sys.exc_info())
@@ -228,11 +238,20 @@ def load_html(path):
 def load_html_for_object_id(object_id, oracc_dir):
     return load_html(get_all_object_html_paths(oracc_dir)[object_id])
 
-def get_object_id_pub(object_id, corpus, oracc_dir):
+def get_object_id_pub(object_id, corpus, catalog_info, lang, oracc_dir):
     pub = cdli.Publication(object_id)
+    pub.language = lang
 
     project_id = corpus["project"]
-    pub.src_url = f"http://oracc.museum.upenn.edu/{project_id}/corpus"
+    pub.src_url = f"http://oracc.museum.upenn.edu/{project_id}/{object_id}"
+
+    # print("CAT", repr(catalog_info))
+    pub.genre = catalog_info["genre"] if "genre" in catalog_info else None
+    pub.period = catalog_info["period"] if "period" in catalog_info else None
+    pub.object_type = catalog_info["object_type"] if "object_type" in catalog_info else None
+    pub.translation_source = catalog_info["author"] if "author" in catalog_info else None
+
+    # print(cdli.pub_to_json(pub))
     
     surface = ""
     column = ""
@@ -253,7 +272,6 @@ def get_object_id_pub(object_id, corpus, oracc_dir):
 
     html = load_html_for_object_id(object_id, oracc_dir)
     texts = html.find_all("div", class_="text")
-    langs = defaultdict(lambda: 0)
 
     for text in texts:
         surface = ""
@@ -289,8 +307,7 @@ def get_object_id_pub(object_id, corpus, oracc_dir):
                 cs = [x for x in cols if x.has_attr("class") and "c" in x["class"]]
                 xtrs = [x for x in cols if x.has_attr("class") and "xtr" in x["class"]]
                 if ntlits == 1:
-                    tlit, lang = tlit_to_normalized_ascii(tlits[0])
-                    langs[lang] += 1
+                    tlit = tlit_to_normalized_ascii(tlits[0])
                     add_line(lnum, tlit)
                     xtr = ""
                     rowspan = 1
@@ -304,8 +321,7 @@ def get_object_id_pub(object_id, corpus, oracc_dir):
                     line_index += 1
                 elif len(cs) > 0 and len(cs) == len(xtrs):
                     for i, c in enumerate(cs):
-                        tlit, lang = tlit_to_normalized_ascii(c)
-                        langs[lang] += 1
+                        tlit = tlit_to_normalized_ascii(c)
                         add_line(lnum + f".{i}", tlit)
                         xtr = xtr_to_en(xtrs[i])
                         para = cdli.TextParagraph(line_index, line_index + 1)
@@ -320,9 +336,6 @@ def get_object_id_pub(object_id, corpus, oracc_dir):
                 
 #                 print("row", r["class"], "with", len(cols), "cols", [(x["class"] if x.has_attr("class") else []) for x in cols])
 #         print("")
-    langs = sorted([(x, langs[x]) for x in langs.keys()], key=lambda x:-x[1])
-#     print(langs)
-    pub.language = langs[0][0] if len(langs) > 0 else None
     return pub
 
 def xtr_to_en(xtr):
@@ -342,7 +355,6 @@ def is_node_sign(node):
     return node.name=="sup" or (node.has_attr("class") and "sign" in node["class"])
 
 def tlit_to_normalized_ascii(tlit):
-    langs = defaultdict(lambda: 0)
     def node_to_str(node, in_sign):
         if isinstance(node, str):
             return [node]
@@ -353,10 +365,6 @@ def tlit_to_normalized_ascii(tlit):
             ignore = ignore or (c in tlit_ignore_classes)
         if ignore:
             return []
-        if node.name == "span" and "sign" not in classes:
-            for c in classes:
-                if c in languages.all_languages:
-                    langs[c] += 1
         parts = []
         is_sup = node.name == "sup"
         is_sign = all(is_node_sign(x) for x in node)
@@ -377,10 +385,7 @@ def tlit_to_normalized_ascii(tlit):
             parts.append("}")
         return parts
     tokens = node_to_str(tlit, in_sign=False)
-    langs = sorted([(x, langs[x]) for x in langs.keys()], key=lambda x:-x[1])
-#     print(langs)
-    lang = langs[0][0] if len(langs) > 0 else "?"
-    return languages.unicode_words_to_normalized_ascii(tokens), lang
+    return languages.unicode_words_to_normalized_ascii(tokens)
 
 def write_pubs_json(oracc_transliterated_pubs, json_path):
     pubs_json = {p.id: cdli.pub_to_json(p) for p in oracc_transliterated_pubs.values()}

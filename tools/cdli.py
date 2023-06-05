@@ -132,6 +132,7 @@ def pub_to_json(pub):
         "period": pub.period,
         "object_type": pub.object_type,
         "src_url": pub.src_url,
+        "translation_source": pub.translation_source,
     }
 
 def json_to_pub(json):
@@ -420,10 +421,11 @@ def get_periods(raw_periods):
     years = get_years(raw_periods)
     if len(years) == 0:
         periods = [sanitize_period(y) for z in raw_periods.split(" or ") for y in z.split(";")]
-        periods = [p for p in periods if p in year_from_period]
-        if len(periods) == 0:
-            print("No periods for:", raw_periods)
-        return periods
+        valid_periods = [p for p in periods if p in year_from_period]
+        if len(valid_periods) == 0:
+            # print("No periods for:", raw_periods)
+            return periods
+        return valid_periods
     else:
         return [get_period_from_year(x) for x in years]
 
