@@ -298,9 +298,20 @@ cdli_inconsistencies = {
 
 blank_string = [
     "(blank)",
+    "($blank$)",
     "($ blank $)",
+    "(blank space)",
+    "((blank space))",
+    "($blank space$)",
     "($ blank space $)",
+    "(space)",
     "( space )",
+    "($space$)",
+    "($ space $)",
+    "((traces))",
+    "(traces)",
+    "($traces$)",
+    "($ traces $)",
 ]
 
 li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
