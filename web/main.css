@@ -69,7 +69,7 @@ h1,h2,h3,h4,h5,h6 { font-family: headingfont; }
 h1 { text-align: center; }
 p.src { font-size: 80%; font-style: italic;}
 .otitle { text-align: center; }
-h1.otitle { margin-top: 1em; padding-top: 1em; border-top:solid 2px rgba(128,128,128,0.5); }
+h1.otitle { margin-top: 1em; }
 .line:hover, .line-match { background-color: rgba(255, 255, 0, 0.25); }
 .langid {
     font-family: textfont;
@@ -114,13 +114,41 @@ h1.otitle { margin-top: 1em; padding-top: 1em; border-top:solid 2px rgba(128,128
     justify-content: center;
     align-items: flex-start;
     align-content: flex-start;
-    /* Space between columns */
     column-gap: 2em;
     margin-bottom: 2em;
 }
-.publications-list {
-    /* display: inline-block;
-    vertical-align: top;
-    margin-right: 4em; */
+
+.browsedims-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    column-gap: 2em;
+    margin-bottom: 2em;
 }
 
+.browsedims-container section {
+    max-width: 20em;
+}
+
+.browsedims-container section a {
+    margin-right: 1em;
+}
+
+.pub {
+    background: linear-gradient(rgba(110,110,110,0.25), rgba(80,80,80,0.15));
+    border-radius: 1em;
+    max-width: fit-content;
+}
+
+.pubs-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    column-gap: 2em;
+    row-gap: 1em;
+    margin-bottom: 2em;
+}

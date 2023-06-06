@@ -8,9 +8,12 @@ function PublicationBrowser($browserElement, publicationIds) {
     this.publicationIds = publicationIds;
     this.$browserElement.innerHTML = "";
     this.$browserElement.classList.add('publication-browser');
+    this.$pubsContainer = document.createElement('div');
+    this.$pubsContainer.classList.add('pubs-container');
+    this.$browserElement.appendChild(this.$pubsContainer);
     this.$pub = document.createElement('div');
-    this.$pub.classList.add('publication');
-    this.$browserElement.appendChild(this.$pub);
+    this.$pub.classList.add('pub');
+    this.$pubsContainer.appendChild(this.$pub);
     this.pdirCache = {};
     this.showPublicationAsync(publicationIds[0]);
 }
