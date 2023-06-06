@@ -228,6 +228,7 @@ unicode_atf_to_ascii_atf_replacements = [
     ("Ū", "U"),
     ("ȗ", "u"),
     ("Ȗ", "U"),
+    ("†", "x"),
     ("ₓ", "x2"),
     ("ₓ", "X2"),
     ("₀", "0"),
@@ -240,7 +241,7 @@ unicode_atf_to_ascii_atf_replacements = [
     ("₇", "7"),
     ("₈", "8"),
     ("₉", "9"),
-]
+] + unicode_en_to_ascii_en_replacements
 
 unicode_atf_to_ascii_atf_token_replacements = {
     "bán": "ban2",
@@ -312,9 +313,9 @@ def replace_unsupported_en(text):
         r = r.replace(s, t)
     return r
 
-def replace_unsupported_unicode(text):
+def replace_unsupported_atf(text):
     r = text
-    for s, t in unicode_en_to_ascii_en_replacements:
+    for s, t in unicode_atf_to_ascii_atf_replacements:
         r = r.replace(s, t)
     return r
 
@@ -377,8 +378,7 @@ def unicode_words_to_normalized_ascii(tokens):
     def proc_token(token):
         if token in unicode_atf_to_ascii_atf_token_replacements:
             return unicode_atf_to_ascii_atf_token_replacements[token]
-        for s, t in unicode_atf_to_ascii_atf_replacements:
-            token = token.replace(s, t)
+        token = replace_unsupported_atf(token)
         return token
     retokenized = "".join(proc_token(x) for x in tokens)
     return retokenized.strip()
@@ -387,7 +387,7 @@ def replace_quotes(text):
     return text.replace("“", "\"").replace("”", "\"").replace("‟", "\"").replace("’", "'").replace("‘", "'").replace("‛", "'").replace("„", "\"").replace("´", "'").replace("ˊ", "'")
 
 def replace_spaces(text):
-    return text.replace("\u0005", "").replace("\u0015", "").replace("\u2060", " ").replace("\u202c", " ").replace("\ufeff", "").replace("\u2006", "").replace("\\1", "")
+    return text.replace("\n", " ").replace("\t", " ").replace("\u00a0", " ").replace("\u0005", "").replace("\u0015", "").replace("\u2060", " ").replace("\u202c", " ").replace("\u202f", " ").replace("\ufeff", "").replace("\u2006", "").replace("\\1", "")
 
 def prep_src_for_nn(src, lang, corpus_id):
     src = replace_quotes(src)
@@ -397,14 +397,15 @@ def prep_src_for_nn(src, lang, corpus_id):
     src = dashes_to_dots(src)                    
     src = src.replace("{", "(").replace("}", ")").replace("<", "(").replace(">", ")")
     src = src.replace("~", "-")
+    src = replace_unsupported_atf(src)
     src = remove_extraneous_space(src)
     return src
 
 def prep_tgt_for_nn(tgt, lang, corpus_id):
     tgt = replace_quotes(tgt)
     tgt = replace_spaces(tgt)
+    tgt = remove_blanks(tgt)
     tgt = tgt.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("<", "").replace(">", "").replace("{", "").replace("}", "").replace("‹", "").replace("›", "")
-    tgt = tgt.replace("\n", " ").replace("\t", " ")
     tgt = tgt.replace("~", "").replace("§", "")
     tgt = replace_unsupported_en(tgt)
     tgt = remove_extraneous_space(tgt)
