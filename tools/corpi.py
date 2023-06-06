@@ -74,5 +74,6 @@ def merge_corpus_pubs(pubss, supported_langs):
         for p in pubs:
             if p.language in supported_langs:
                 p.corpus = corpus
-                all_pubs[p.id] = p
+                if any(len(a.lines) > 0 for a in p.text_areas):
+                    all_pubs[p.id] = p
     return all_pubs

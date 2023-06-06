@@ -289,6 +289,8 @@ genres = {
     'ritual',
     'omens',
     'astronomical',
+    'astronomical-diary'
+    'astronomical-omen',
     'school',
     'prayer-incantation',
     'administative',
@@ -301,25 +303,43 @@ genres = {
     'scientific',
     'literary',
     'legal',
-    'astronomical, omen',
     'votive',
     'medical',
     'historical',
     'fake',
     'royal-monumental',
-    'administrative record',
     'omen',
-    'private-votive'
+    'private-votive',
+    'incantation-ritual',
+    'priestly-letter', 'extispicy-query', 'legal-transaction', 'extispicy-report', 'administrative-letter', 'decree', 'prophecy', 
+    'scholarly-letter', 'royal-stone-inscription', 'school', 'inscription-on-a-perle', 'literary-work', 'votive-donation', 
+    'eponym-chronicle', 'hemerological', 'royal-inscription', 'lexical-mathematical', 'appointment', 'astronomical-diary', 
+    'technical-procedure', 'gift', 'astrological', 'grant', 'royal-ritual', 'scholarly',
+    'eponym-list',
+    'treaty',
+    'hymn-prayer'
 }
+
+missing_genres = set()
 
 def get_genre(x):
     if x is None:
         return "other-genre"
-    g = str(x).lower().replace("?","").replace("(see subgenre)","").replace("(modern)", "").replace("(seal)", "").replace("/", "-").strip()
-    if g == "other":
+    g = str(x).lower().replace("?","").replace("(see subgenre)","").replace("(modern)", "").replace("(seal)", "").replace("/", "-").replace(", ", "-").replace(" & ", "-").strip().replace(" ", "-")
+    if g == "other" or g == "nan":
         return "other-genre"
+    if g == 'royal-metal-inscription':
+        return 'royal-inscription'
+    if g == 'lexical-text':
+        return 'lexical'
+    if g == 'administrative-record' or g == 'administrative-letter':
+        return 'administrative'
+    if g == 'astrological-report':
+        return 'astrological'
     if g in genres:
         return g
+    missing_genres.add(g)
+    print("Missing genres:\n", repr(missing_genres))
     return "other-genre"
 
 def get_genres(gs):

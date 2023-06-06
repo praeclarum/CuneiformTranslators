@@ -1,14 +1,34 @@
-async function createPublicationBrowserAsync($browserElement, indexJsonUrl) {
-    const indexJson = await fetch(indexJsonUrl).then((response) => response.json());
-    const browser = new PublicationBrowser($browserElement, indexJson);
+function makePublicationBrowser($browserElement, publicationIds) {
+    // const indexJson = await fetch(indexJsonUrl).then((response) => response.json());
+    const browser = new PublicationBrowser($browserElement, publicationIds);
     return browser;
 }
 
-function PublicationBrowser($browserElement, indexJson) {
+function PublicationBrowser($browserElement, publicationIds) {
     this.$browserElement = $browserElement;
-    this.indexJson = indexJson;
+    this.publicationIds = publicationIds;
     this.$browserElement.innerHTML = "";
     this.$browserElement.classList.add('publication-browser');
+    this.$pub = document.createElement('div');
+    this.$pub.classList.add('publication');
+    this.$browserElement.appendChild(this.$pub);
+    this.pdirCache = {};
+    this.showPublicationAsync(publicationIds[0]);
+}
+PublicationBrowser.prototype.getPublicationAsync = async function(pubId) {
+    const pdirUrl = "/p/" + pubId.slice(0, 4).toLowerCase() + ".json";
+    if (this.pdirCache[pdirUrl] == null) {
+        this.pdirCache[pdirUrl] = await fetch(pdirUrl).then((response) => response.json());
+    }
+    const pdir = this.pdirCache[pdirUrl];
+    const pub = pdir[pubId];
+    return pub;
+}
+PublicationBrowser.prototype.showPublicationAsync = async function(pubId) {
+    const pdirUrl = "p/" + pubId.slice(0, 4) + ".json";
+    this.$pub.innerText = `Loading ${pubId}...`;
+    const pub = await this.getPublicationAsync(pubId);
+    this.$pub.innerHTML = pub.html;
 }
 
 const lines = document.querySelectorAll('.line');
