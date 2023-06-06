@@ -43,35 +43,177 @@ all_languages = {**old_languages, **transliterated_languages, **modern_languages
 language_codes = set(list(all_languages.keys()))
 
 unicode_en_to_ascii_en_replacements = [
+    ("，", ", "),
+    ("；", "; "),
+    (" ̱", " "),
+    (" ̄", " "),
+    ("·", " "),
+    ("−", "-"),
+    ("≈", "="),
+    ("⸢", ""),
+    ("⸣", "#"),
+    ("ʾ", "'"),
+    ("ʿ", "'"),
+    ("ʿ", "'"), 
+    ("˒", "'"),
+    ("×", "x"),
+    ("Ø", "0"),
     ("ā", "a"),
     ("Ā", "a"),
+    ("ā", "a"),
+    ("Ā", "a"),
+    ("¯a", "a"),
+    ("¯A", "A"),
+    ("ã", "a"),
+    ("Ã", "A"),
+    ("á", "A"),
+    ("Á", "A"),
+    ("à", "a"),
+    ("À", "A"),
+    ("ḏ", "d"),
+    ("Ḏ", "D"),
+    ("d̄", "d"),
+    ("D̄", "D"),
+    ("\u0082", "e"),
+    ("ē", "e"),
+    ("Ē", "E"),
+    ("è", "e"),
+    ("È", "E"),
     ("ŋ", "g"),
     ("Ŋ", "G"),
+    ("ĝ", "g"),
+    ("Ĝ", "G"),
+    ("ǵ", "g"),
+    ("Ǵ", "g"),
     ("ḫ", "h"),
     ("Ḫ", "H"),
+    ("ḥ", "h"),
+    ("Ḥ", "H"),
+    ("ȟ", "h"),
+    ("Ȟ", "H"),
+    ("ȟ", "h"),
+    ("Ȟ", "H"),
+    ("\u0068\u032e", "h"),
+    ("\u0048\u032e", "H"),
+    ("Ḫ̮", "H"),
     ("ī", "i"),
     ("Ī", "I"),
-#     ("î", "i"),
-#     ("Î", "I"),
+    ("ì", "i"),
+    ("Ì", "I"),
+    ("ȋ", "i"),
+    ("Ȋ", "I"),
+    ("í", "i"),
+    ("Í", "I"),
+    # ("î", "i"),
+    # ("Î", "I"),
+    ("\u0069\u0306", "î"),
     ("ř", "r"),
     ("Ř", "R"),
     ("šš", "sh"),
     ("š", "sh"),
     ("Š", "Sh"),
+    ("š", "sh"),
+    ("Š", "Sh"),
+    ("ŝ", "sh"),
+    ("Ŝ", "Sh"),
     ("ṣ", "sh"),
     ("Ṣ", "Sh"),
+    ("ṣ", "sh"),
+    ("Ṣ", "Sh"),
+    ("ṧ", "sh"),
+    ("Ṧ", "Sh"),
+    ("Ş", "Sh"),
+    ("Ś", "Sh"),
     ("ṭ", "t"),
     ("Ṭ", "T"),
+    ("ṭ", "t"),
+    ("Ṭ", "T"),
+    ("ț", "T"),
+    ("Ț", "T"),
+    ("ṯ", "t"),
+    ("Ṯ", "T"),
     ("ū", "u"),
     ("Ū", "U"),
+    ("ȗ", "u"),
+    ("Ȗ", "U"),
+    ("û", "u"),
+    ("Û", "U"),
+    ("Û", "U"),
+    ("ǔ", "u"),
+    ("Ǔ", "U"),
+    ("ũ", "u"),
+    ("Ũ", "U"),
+    ("ü", "u"),
+    ("Ü", "U"),
+    ("ù", "U"),
+    ("Ù", "U"),
+    ("ú", "u"),
+    ("Ú", "U"),
+    ("ẓ", "z"),
+    ("Ẓ", "Z"),
+    ("₀", "0"),
+    ("₁", "1"),
+    ("₂", "2"),
+    ("₃", "3"),
+    ("₄", "4"),
+    ("₅", "5"),
+    ("₆", "6"),
+    ("₇", "7"),
+    ("₈", "8"),
+    ("₉", "9"),
+    ("ₓ", "x"),
+    ("¹", "1"),
+    ("²", "2"),
+    ("³", "3"),
+    ("⁴", "4"),
+    ("⁵", "5"),
+    ("⁶", "6"),
+    ("⁷", "7"),
+    ("⁸", "8"),
+    ("⁹", "9"),
+    ("½", "1/2"),
+    ("¼", "1/4"),
+    ("¾", "3/4"),
+    ("α", "alpha"),
+    ("β", "beta"),
+    ("β", "beta"),
+    ("γ", "gamma"),
+    ("δ", "delta"),
+    ("ε", "epsilon"),
+    ("η", "eta"),
+    ("υ", "upsilon"),
+    ("ζ", "zeta"),
+    ("θ", "theta"),
+    ("κ", "kappa"),
+    ("ρ", "rho"),
+    ("σ", "sigma"),
+    ("τ", "tau"),
+    ("φ", "phi"),
+    ("π", "pi"),
+    ("ω", "omega"),
+    ("Ω", "Omega"),
+    ("Ψ", "Psi"),
+    ("ξ", "xi"),
+    ("ϑ", "theta"),
+    ("μ", "mu"),
+    ("˚", "o"),
+    ("º", "o"),
+    ("✸", "*"),
+    ("¤", "*"),
+    ("¿", "?"),
 ]
 
 unicode_atf_to_ascii_atf_replacements = [
     ("⸢", ""),
     ("⸣", "#"),
     ("ʾ", "'"),
+    ("ʿ", "'"),
+    ("ĝ", "g^"),
+    ("Ĝ", "G^"),
     ("ŋ", "g"),
     ("Ŋ", "G"),
+    ("ē", "e"),
+    ("Ē", "E"),
     ("ḫ", "h"),
     ("Ḫ", "H"),
     ("š", "sz"),
@@ -82,6 +224,10 @@ unicode_atf_to_ascii_atf_replacements = [
     ("Ś", "S'"),
     ("ṭ", "t,"),
     ("Ṭ", "T,"),
+    ("ū", "u"),
+    ("Ū", "U"),
+    ("ȗ", "u"),
+    ("Ȗ", "U"),
     ("ₓ", "x2"),
     ("ₓ", "X2"),
     ("₀", "0"),
@@ -166,6 +312,12 @@ def replace_unsupported_en(text):
         r = r.replace(s, t)
     return r
 
+def replace_unsupported_unicode(text):
+    r = text
+    for s, t in unicode_en_to_ascii_en_replacements:
+        r = r.replace(s, t)
+    return r
+
 cuneiform_unicode = json.loads(requests.get("https://github.com/darth-cheney/cuneiform-signs-unicode/raw/master/cuneiform-unicode.json").text)["signs"]
 
 cuneiform_unicode_replacements = { x["value"].lower(): x["character"] for x in cuneiform_unicode }
@@ -229,5 +381,31 @@ def unicode_words_to_normalized_ascii(tokens):
             token = token.replace(s, t)
         return token
     retokenized = "".join(proc_token(x) for x in tokens)
-    underlined = underline_sign_names(retokenized).strip()
-    return underlined
+    return retokenized.strip()
+
+def replace_quotes(text):
+    return text.replace("“", "\"").replace("”", "\"").replace("‟", "\"").replace("’", "'").replace("‘", "'").replace("‛", "'").replace("„", "\"").replace("´", "'").replace("ˊ", "'")
+
+def replace_spaces(text):
+    return text.replace("\u0005", "").replace("\u0015", "").replace("\u2060", " ").replace("\u202c", " ").replace("\ufeff", "").replace("\u2006", "").replace("\\1", "")
+
+def prep_src_for_nn(src, lang, corpus_id):
+    src = replace_quotes(src)
+    src = replace_spaces(src)
+    src = remove_blanks(src)
+    src = underline_sign_names(src)
+    src = dashes_to_dots(src)                    
+    src = src.replace("{", "(").replace("}", ")").replace("<", "(").replace(">", ")")
+    src = src.replace("~", "-")
+    src = remove_extraneous_space(src)
+    return src
+
+def prep_tgt_for_nn(tgt, lang, corpus_id):
+    tgt = replace_quotes(tgt)
+    tgt = replace_spaces(tgt)
+    tgt = tgt.replace("[", "").replace("]", "").replace("(", "").replace(")", "").replace("<", "").replace(">", "").replace("{", "").replace("}", "").replace("‹", "").replace("›", "")
+    tgt = tgt.replace("\n", " ").replace("\t", " ")
+    tgt = tgt.replace("~", "").replace("§", "")
+    tgt = replace_unsupported_en(tgt)
+    tgt = remove_extraneous_space(tgt)
+    return tgt

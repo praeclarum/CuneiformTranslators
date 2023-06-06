@@ -387,7 +387,3 @@ def tlit_to_normalized_ascii(tlit):
     tokens = node_to_str(tlit, in_sign=False)
     return languages.unicode_words_to_normalized_ascii(tokens)
 
-def write_pubs_json(oracc_transliterated_pubs, json_path):
-    pubs_json = {p.id: cdli.pub_to_json(p) for p in oracc_transliterated_pubs.values()}
-    with open(json_path, "w") as f:
-        json.dump(pubs_json, f, indent=2, ensure_ascii=False)

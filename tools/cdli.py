@@ -19,6 +19,8 @@ class Publication():
         return f"Publication({repr(self.id)}, {repr(self.language)}, {repr(self.text_areas)})"
     def has_translations(self):
         return any(x.has_translations() for x in self.text_areas)
+    def is_translated(self, tgt_lang):
+        return any(x for x in self.text_areas if x.is_translated(tgt_lang))
     
 class TextArea():
     def __init__(self, name, lines=None, paragraphs=None):
@@ -28,8 +30,13 @@ class TextArea():
     def __repr__(self):
         return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
     def has_translations(self):
-        return len(self.lines) > 0 and (any(x.has_translations() for x in self.lines) or any(x.has_translations() for x in self.paragraphs))
-    def lines_to_paragraphs(self, src_lang, tgt_lang, max_length=128):
+        return len(self.paragraphs) > 0 and any(x.has_translations() for x in self.paragraphs)
+    def is_translated(self, tgt_lang):
+        for para in self.paragraphs:
+            if tgt_lang in para.languages:
+                return True
+        return False
+    def lines_to_paragraphs(self, src_lang, tgt_lang, max_length=512):
         self.paragraphs = list()
         plen = 0
         for iline, line in enumerate(self.lines):
@@ -51,7 +58,7 @@ class TextArea():
                 tlines = [(x.languages[tgt_lang] if tgt_lang in x.languages else "") for x in lines]
                 p.languages[tgt_lang] = languages.remove_extraneous_space(" ".join(tlines))
         return self.paragraphs
-    def paragraphs_to_lines(a, max_line_length=512):
+    def paragraphs_to_lines(a, lang, corpus_id, max_line_length=512):
         psrcs = list()
         for p in a.paragraphs:
             srcs = list()
@@ -64,10 +71,7 @@ class TextArea():
                 end_line_index -= 1
                 src_lines = [x.text for x in a.lines[start_line_index:end_line_index]]
                 src = " ".join(src_lines)
-            src = languages.remove_blanks(src)
-            src = languages.underline_sign_names(src)
-            src = languages.dashes_to_dots(src)                        
-            src = languages.remove_extraneous_space(src)
+            src = languages.prep_src_for_nn(src, lang=lang, corpus_id=corpus_id)
             if len(src) > 0 and src not in srcs:
                 src_len = len(src)
                 if src_len > max_line_length:
@@ -506,12 +510,3 @@ def print_pub_lines(pub, tgt_len="en"):
         for line in a.lines:
             print(line.text)
         print("")
-        
-def text_area_is_translated(pub, text_area, tgt_lang):
-    for line in text_area.lines:
-        if tgt_lang in line.languages:
-            return True
-    return False
-
-def pub_is_translated(pub, tgt_lang):
-    return any(x for x in pub.text_areas if text_area_is_translated(pub, x, tgt_lang))

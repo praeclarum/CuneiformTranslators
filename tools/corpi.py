@@ -1,5 +1,6 @@
 import sys, os, datetime
 import json
+import zipfile
 from tqdm import tqdm
 from collections import defaultdict
 
@@ -9,11 +10,17 @@ import oracc
 class Corpus:
     def __init__(self, id):
         self.id = id
-    def get_pubs_with_lang(self, src_lang):
+    def get_pubs(self):
         raise NotImplementedError
+    def init_pubs(self):
+        for pub in self.get_pubs():
+            pub.corpus = self.id
+    def get_pubs_with_lang(self, src_lang):
+        transliterated_cdli_index = {x.id: x for x in self.get_pubs() if x.language == src_lang}
+        return transliterated_cdli_index
 
 class CDLI(Corpus):
-    def __init__(self):
+    def __init__(self, tqdm=tqdm):
         super().__init__("cdli")
         zip_path = "../data/cdli_pubs.zip"
         if os.path.exists(zip_path):
@@ -22,6 +29,7 @@ class CDLI(Corpus):
                     json_name = [x for x in zf.namelist() if x.endswith(".json")][0]
                     pubs_json = json.load(zf.open(json_name, "r"))
                     self.cdli_pubs = {p["id"]: cdli.json_to_pub(p) for p in pubs_json.values()}
+                    self.init_pubs()
                     return
         cat = cdli.get_catalog()
         atf_pubs = cdli.get_atf()
@@ -30,12 +38,10 @@ class CDLI(Corpus):
             with zipfile.ZipFile(f, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 json_str = json.dumps({p.id: cdli.pub_to_json(p) for p in self.cdli_pubs.values()})
                 zf.writestr("oracc_pubs.json", bytes(json_str, "utf-8"))
-    def get_pubs_with_lang(self, src_lang):
-        transliterated_cdli_index = {x.id: x for x in self.cdli_pubs.values() if x.language == src_lang}
-        return transliterated_cdli_index
-
-import zipfile
-
+        self.init_pubs()
+    def get_pubs(self):
+        return self.cdli_pubs.values()
+    
 class ORACC(Corpus):
     def __init__(self, oracc_dir, tqdm=tqdm):
         super().__init__("oracc")
@@ -46,6 +52,7 @@ class ORACC(Corpus):
                     json_name = [x for x in zf.namelist() if x.endswith(".json")][0]
                     pubs_json = json.load(zf.open(json_name, "r"))
                     self.oracc_pubs = {p["id"]: cdli.json_to_pub(p) for p in pubs_json.values()}
+                    self.init_pubs()
                     return
         oracc_pub_ids_and_langs, transliterated_oracc_corpi = oracc.load_all_project_pub_ids(oracc_dir, tqdm=tqdm)
         transliterated_oracc_pub_ids = set(transliterated_oracc_corpi.keys())
@@ -64,9 +71,9 @@ class ORACC(Corpus):
             with zipfile.ZipFile(f, "w", compression=zipfile.ZIP_DEFLATED) as zf:
                 json_str = json.dumps({p.id: cdli.pub_to_json(p) for p in self.oracc_pubs.values()})
                 zf.writestr("oracc_pubs.json", bytes(json_str, "utf-8"))
-    def get_pubs_with_lang(self, src_lang):
-        transliterated_oracc_index = {x.id: x for x in self.oracc_pubs.values() if x.language == src_lang}
-        return transliterated_oracc_index
+        self.init_pubs()
+    def get_pubs(self):
+        return self.oracc_pubs.values()
 
 def merge_corpus_pubs(pubss, supported_langs):
     all_pubs = dict()
