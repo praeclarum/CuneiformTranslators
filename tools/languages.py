@@ -321,6 +321,37 @@ li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)
 
 underline_sign_names_re = re.compile(r"\b([A-Z][A-Z0-9#\. &]*[A-Z0-9#])")
 
+en_index_ignore_words = set([
+    "#tren", "&", "-", "--", "xxx", "—", "x",
+    "in", "the", "were",
+    "of", "and", "to", "if", "or", "for", "let", "but", "then",
+    "a", "is", "was", "all", "an", "are", "am", "as",
+    "at", "be", "by", "do", "did", "does", "from", "had",
+    "has", "have", "he", "her", "him", "his", "i", "in",
+    "i", "my", "me",
+    "you", "your", "he",
+    "his", "she", "her", "him",
+    "it", "we", "our",
+    "us", "they", "their",
+    "them", "this", "that",
+    "these", "those", "here",
+    "there", "which", "who",
+    "whom", "whose", "what",
+    "when", "where", "why",
+    "how", "be", "have", "had", "has",
+    "do", "did", "done",
+    "can", "could", "will",
+    "would", "shall", "should",
+    "may", "might", "must",
+    "for", "with", "from",
+    "not", "on", "as", "no",
+    "its", "by", "at", "together", "also", "around",
+    "out", "into", "about", "over", "up", "down",
+    "off", "after", "under", "again", "further",
+    "come", "go", "went", "gone", "went", "goes",
+    "built", "made", "make", "makes", "making",
+])
+
 def replace_unsupported_en(text):
     r = text
     for s, t in unicode_en_to_ascii_en_replacements:

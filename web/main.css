@@ -107,3 +107,20 @@ h1.otitle { margin-top: 1em; padding-top: 1em; border-top:solid 2px rgba(128,128
     font-size: 18pt;
     margin-top: 2em;
 }
+
+.publications-list-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    /* Space between columns */
+    column-gap: 2em;
+    margin-bottom: 2em;
+}
+.publications-list {
+    /* display: inline-block;
+    vertical-align: top;
+    margin-right: 4em; */
+}
+
