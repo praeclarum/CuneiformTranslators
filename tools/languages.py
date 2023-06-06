@@ -383,6 +383,12 @@ def target_ok(target_text):
         return False
     if len(set(target_text.replace(" ", ""))) < 2:
         return False
+    if "o translation warranted" in target_text:
+        return False
+    if "o translation possible" in target_text:
+        return False
+    if "oo fragmentary for translation" in target_text:
+        return False
     return True
 
 def looks_like_li(line, lang):
