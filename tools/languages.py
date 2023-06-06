@@ -312,10 +312,9 @@ blank_string = [
     "(traces)",
     "($traces$)",
     "($ traces $)",
-    # "((lost))",
-    # "(lost)",
-    # "($lost$)",
-    # "($ lost $)",
+    "((lost))",
+    "($lost$)",
+    "($ lost $)",
 ]
 
 li_start_re = re.compile(r"^\[?_?\d+(/\d+)?\((asz|ban2|barig|disz|gesz2|iku|u)\)\]?")
