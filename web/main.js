@@ -74,18 +74,11 @@ PublicationBrowser.prototype.setPublicationIdsAsync = async function(newPubIds) 
     await this.showPublicationAsync(this.selectedIndex);
 }
 
-function makePublicationSearch($searchElement) {
-    const browser = new PublicationSearch($searchElement);
-    return browser;
-}
-function PublicationSearch($searchElement, initialQuery) {
+function PublicationSearch($searchElement, $searchInput, initialQuery) {
     this.$searchElement = $searchElement;
     this.$searchElement.innerHTML = "";
     this.$searchElement.classList.add('publication-search');
     this.$searchElement.innerHTML = `
-        <div class="search-input-container">
-            <input class="search-input" type="text" placeholder="Search" value="${initialQuery || ""}"/>
-        </div>
         <div class="browser">
         </div>
         <div class="search-results-container">
@@ -94,9 +87,12 @@ function PublicationSearch($searchElement, initialQuery) {
     `;
     this.$browser = this.$searchElement.querySelector('.browser');
     this.browser = new PublicationBrowser(this.$browser, []);
-    this.$searchInput = this.$searchElement.querySelector('.search-input');
+    this.$searchInput = $searchInput;
+    if (this.$searchInput.value !== initialQuery) {
+        this.$searchInput.value = initialQuery;
+    }
     this.$searchResults = this.$searchElement.querySelector('.search-results');
-    this.$searchInput.addEventListener('input', () => this.onSearchInput());
+    // this.$searchInput.addEventListener('input', () => this.onSearchInput());
 }
 PublicationSearch.prototype.onSearchInput = async function() {
     const query = this.$searchInput.value;

@@ -166,3 +166,13 @@ h1.otitle { margin-top: 1em; }
 .selection-text {
     margin: 0em 1em;
 }
+
+header {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    column-gap: 4em;
+    width: 100%;
+}
