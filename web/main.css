@@ -64,7 +64,7 @@ body { font-family: headingfont; font-size: var(--font-size); }
 a { color: var(--color-accent2); text-decoration: none; text-decoration-color: var(--color-accent2); }
 a:hover { color: var(--color-accent2); text-decoration: underline; }
 a.external { color: var(--color-accent3) !important; text-decoration-color: var(--color-accent3); }
-div.content { margin: 0 auto; max-width: 2048px; }
+div.content { margin: 0 auto; }
 h1,h2,h3,h4,h5,h6 { font-family: headingfont; }
 h1 { text-align: center; }
 p.src { font-size: 80%; font-style: italic;}
@@ -151,4 +151,5 @@ h1.otitle { margin-top: 1em; }
     column-gap: 2em;
     row-gap: 1em;
     margin-bottom: 2em;
+    width: 100%;
 }

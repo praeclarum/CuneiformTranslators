@@ -69,12 +69,15 @@ PublicationSearch.prototype.onSearchInput = async function() {
     const query = this.$searchInput.value;
     await this.searchAsync(query);    
 }
-PublicationSearch.prototype.searchAsync = async function(query) {
+PublicationSearch.prototype.searchAsync = async function(query, setText) {
+    if (setText) {
+        this.$searchInput.value = query;
+    }
     const parts = query.split(" ");
     const foundPubIds = [];
     for (let part of parts) {
-        const pubIds = await this.searchPartAsync(part);
-        for (let pubId of pubIds) {
+        const pubIdAndCounts = await this.searchPartAsync(part);
+        for (let [pubId, count] of pubIdAndCounts) {
             if (!foundPubIds.includes(pubId)) {
                 foundPubIds.push(pubId);
             }
@@ -104,22 +107,35 @@ PublicationSearch.prototype.searchWordAsync = async function(word) {
     word = word.toLowerCase();
     const indexUrl = "en_index/" + word.slice(0, 2) + ".json";
     const index = await (await fetch(indexUrl)).json();
-    // console.log(wordIndex);
-    const pubIds = index[word];
-    console.log("word", word, pubIds);
-    return pubIds || [];
+    if (word in index) {
+        const pubIdAndCounts = index[word];
+        console.log("word", word, pubIdAndCounts);
+        return pubIdAndCounts;
+    }
+    else {
+        const words = Object.keys(index);
+        const prefixed = words.filter((w) => w.startsWith(word));
+        const pubIdAndCounts = [];
+        for (let w of prefixed) {
+            pubIdAndCounts.push(...index[w]);
+        }
+        console.log("word", word, pubIdAndCounts);
+        return pubIdAndCounts;
+    }
 }
 PublicationSearch.prototype.searchIdAsync = async function(pubId) {
-    if (pubId.length < 7) {
+    if (pubId.length < 4) {
         return [];
     }
     const indexUrl = "p/" + pubId.toLowerCase().slice(0, 4) + ".json";
     const index = await (await fetch(indexUrl)).json();
     if (pubId in index) {
-        return [pubId];
+        return [[pubId, 1000]];
     }
     else {
-        return [];
+        const pubIds = Object.keys(index);
+        const prefixed = pubIds.filter((id) => id.startsWith(pubId));
+        return prefixed.map((id) => [id, 1000 - id.length]);
     }
 }
 
