@@ -153,3 +153,16 @@ h1.otitle { margin-top: 1em; }
     margin-bottom: 2em;
     width: 100%;
 }
+
+.selection-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    width: 100%;
+}
+
+.selection-text {
+    margin: 0em 1em;
+}

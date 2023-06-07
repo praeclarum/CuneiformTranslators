@@ -4,18 +4,35 @@ function makePublicationBrowser($browserElement, publicationIds) {
     return browser;
 }
 function PublicationBrowser($browserElement, publicationIds) {
-    this.$browserElement = $browserElement;
+    this.pdirCache = {};
     this.publicationIds = publicationIds;
+    this.selectedIndex = 0;
+    this.$browserElement = $browserElement;
     this.$browserElement.innerHTML = "";
     this.$browserElement.classList.add('publication-browser');
+    this.$selectPrevious = document.createElement('button');
+    this.$selectPrevious.classList.add('select-button');
+    this.$selectPrevious.innerText = "<";
+    this.$selectPrevious.addEventListener('click', () => this.selectPrevious());
+    this.$selectNext = document.createElement('button');
+    this.$selectNext.classList.add('select-button');
+    this.$selectNext.innerText = ">";
+    this.$selectNext.addEventListener('click', () => this.selectNext());
+    this.$selectionText = document.createElement('span');
+    this.$selectionText.classList.add('selection-text');
+    const $selectionContainer = document.createElement('div');
+    $selectionContainer.classList.add('selection-container');
+    this.$browserElement.appendChild($selectionContainer);
     this.$pubsContainer = document.createElement('div');
     this.$pubsContainer.classList.add('pubs-container');
+    $selectionContainer.appendChild(this.$selectPrevious);
+    $selectionContainer.appendChild(this.$selectionText);
+    $selectionContainer.appendChild(this.$selectNext);
     this.$browserElement.appendChild(this.$pubsContainer);
     this.$pub = document.createElement('div');
     this.$pub.classList.add('pub');
     this.$pubsContainer.appendChild(this.$pub);
-    this.pdirCache = {};
-    this.showPublicationAsync(publicationIds[0]);
+    this.showPublicationAsync(this.selectedIndex);
 }
 PublicationBrowser.prototype.getPublicationAsync = async function(pubId) {
     const pdirUrl = "/p/" + pubId.slice(0, 4).toLowerCase() + ".json";
@@ -26,19 +43,35 @@ PublicationBrowser.prototype.getPublicationAsync = async function(pubId) {
     const pub = pdir[pubId];
     return pub;
 }
-PublicationBrowser.prototype.showPublicationAsync = async function(pubId) {
-    if (typeof pubId !== "string") {
-        this.$pub.innerText = "No publication selected";
+PublicationBrowser.prototype.showPublicationAsync = async function(pubIndex) {
+    if (pubIndex < 0 || pubIndex >= this.publicationIds.length) {
+        this.$pub.innerText = `Bad pub index: ${pubIndex}`;
         return;
     }
+    this.selectedIndex = pubIndex;
+    this.$selectionText.innerText = `${this.selectedIndex + 1} / ${this.publicationIds.length}`;
+    this.$selectPrevious.disabled = this.selectedIndex <= 0;
+    this.$selectNext.disabled = this.selectedIndex >= this.publicationIds.length - 1;
+    const pubId = this.publicationIds[this.selectedIndex];
     const pdirUrl = "p/" + pubId.slice(0, 4) + ".json";
-    this.$pub.innerText = `Loading ${pubId}...`;
+    // this.$pub.innerText = `Loading ${pubId}...`;
     const pub = await this.getPublicationAsync(pubId);
     this.$pub.innerHTML = pub.html;
 }
+PublicationBrowser.prototype.selectPrevious = async function() {
+    if (this.selectedIndex > 0) {
+        await this.showPublicationAsync(this.selectedIndex - 1);
+    }
+}
+PublicationBrowser.prototype.selectNext = async function() {
+    if (this.selectedIndex < this.publicationIds.length - 1) {
+        await this.showPublicationAsync(this.selectedIndex + 1);
+    }
+}
 PublicationBrowser.prototype.setPublicationIdsAsync = async function(newPubIds) {
     this.publicationIds = newPubIds;
-    await this.showPublicationAsync(newPubIds[0]);
+    this.selectedIndex = 0;
+    await this.showPublicationAsync(this.selectedIndex);
 }
 
 function makePublicationSearch($searchElement) {
