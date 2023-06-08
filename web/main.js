@@ -80,10 +80,10 @@ function PublicationSearch($searchElement, $searchInput, initialQuery) {
     this.$searchElement.innerHTML = "";
     this.$searchElement.classList.add('publication-search');
     this.$searchElement.innerHTML = `
-        <div class="browser">
-        </div>
-        <div class="search-results-container">
+        <div class="text-container">
             <div class="search-results"></div>
+        </div>
+        <div class="browser">
         </div>
     `;
     this.$browser = this.$searchElement.querySelector('.browser');
@@ -105,15 +105,19 @@ PublicationSearch.prototype.searchAsync = async function(query, setText) {
     }
     const parts = query.split(" ");
     const foundPubIds = [];
+    const foundPubCounts = {};
     for (let part of parts) {
         const pubIdAndCounts = await this.searchPartAsync(part);
         for (let [pubId, count] of pubIdAndCounts) {
             if (!foundPubIds.includes(pubId)) {
                 foundPubIds.push(pubId);
+                foundPubCounts[pubId] = count;
             }
         }
     }
-    // this.$searchResults.innerHTML = `Found ${foundPubIds.length} publications`;
+    // Sort by count
+    foundPubIds.sort((a, b) => foundPubCounts[b] - foundPubCounts[a]);
+    this.$searchResults.innerHTML = `Found ${foundPubIds.length} publications`;
     // for (let result of foundPubIds) {
     //     const $result = document.createElement('div');
     //     $result.classList.add('search-result');
