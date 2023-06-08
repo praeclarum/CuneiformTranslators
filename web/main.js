@@ -57,6 +57,7 @@ PublicationBrowser.prototype.showPublicationAsync = async function(pubIndex) {
     // this.$pub.innerText = `Loading ${pubId}...`;
     const pub = await this.getPublicationAsync(pubId);
     this.$pub.innerHTML = pub.html;
+    addMatchingLineHandlers();
 }
 PublicationBrowser.prototype.selectPrevious = async function() {
     if (this.selectedIndex > 0) {
@@ -168,42 +169,49 @@ PublicationSearch.prototype.searchIdAsync = async function(pubId) {
     }
 }
 
-
-const lines = document.querySelectorAll('.line');
-for (let $line of lines) {
-    let matchedElements = [];
-    $line.addEventListener("mouseenter", function( event ) {
-        let p = event.target.parentElement;
-        while (p != null && !p.classList.contains('translations-container')) {
-            p = p.parentElement;
-        }        
-        if (p != null) {
-            let linen = "line-";
-            for (let c of event.target.classList) {
-                if (c.startsWith('line-')) {
-                    linen = c + "";
-                }
-            }
-            function highlight(e) {
-                if (e === event.target)
-                    return;
-                if (e.classList.contains(linen)) {
-                    e.classList.add('line-match');
-                    matchedElements.push(e);
-                }
-                else {
-                    for (let c of e.children) {
-                        highlight(c);
+const linesWithHandlers = [];
+function addMatchingLineHandlers() {
+    const lines = document.querySelectorAll('.line');
+    for (let $line of lines) {
+        if (linesWithHandlers.includes($line)) {
+            continue;
+        }
+        linesWithHandlers.push($line);
+        let matchedElements = [];
+        $line.addEventListener("mouseenter", function( event ) {
+            let p = event.target.parentElement;
+            while (p != null && !p.classList.contains('translations-container')) {
+                p = p.parentElement;
+            }        
+            if (p != null) {
+                let linen = "line-";
+                for (let c of event.target.classList) {
+                    if (c.startsWith('line-')) {
+                        linen = c + "";
                     }
                 }
+                function highlight(e) {
+                    if (e === event.target)
+                        return;
+                    if (e.classList.contains(linen)) {
+                        e.classList.add('line-match');
+                        matchedElements.push(e);
+                    }
+                    else {
+                        for (let c of e.children) {
+                            highlight(c);
+                        }
+                    }
+                }
+                highlight(p);
             }
-            highlight(p);
-        }
-        
-    });
-    $line.addEventListener("mouseleave", function( event ) {
-        for (let e of matchedElements) {
-            e.classList.remove('line-match');
-        }
-    });
+            
+        });
+        $line.addEventListener("mouseleave", function( event ) {
+            for (let e of matchedElements) {
+                e.classList.remove('line-match');
+            }
+        });
+    }
 }
+addMatchingLineHandlers();
