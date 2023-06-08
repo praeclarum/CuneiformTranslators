@@ -171,8 +171,16 @@ header {
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
-    align-items: center;
+    align-items: baseline;
     align-content: center;
     column-gap: 4em;
     width: 100%;
+}
+
+#search-input {
+    padding: 0.25em 0.75em;
+    font-size: 150%;
+    background-color: rgba(110,110,110,0.25);
+    border-radius: 0.5em;
+    border: none;
 }

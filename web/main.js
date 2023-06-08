@@ -112,13 +112,13 @@ PublicationSearch.prototype.searchAsync = async function(query, setText) {
             }
         }
     }
-    this.$searchResults.innerHTML = `Found ${foundPubIds.length} publications`;
-    for (let result of foundPubIds) {
-        const $result = document.createElement('div');
-        $result.classList.add('search-result');
-        $result.innerText = JSON.stringify(result);
-        this.$searchResults.appendChild($result);
-    }
+    // this.$searchResults.innerHTML = `Found ${foundPubIds.length} publications`;
+    // for (let result of foundPubIds) {
+    //     const $result = document.createElement('div');
+    //     $result.classList.add('search-result');
+    //     $result.innerText = JSON.stringify(result);
+    //     this.$searchResults.appendChild($result);
+    // }
     await this.browser.setPublicationIdsAsync(foundPubIds);
 }
 PublicationSearch.prototype.searchPartAsync = async function(part) {
