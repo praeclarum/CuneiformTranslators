@@ -36,6 +36,10 @@ html {
     --dark-color-text: #fff;
     --light-color-group-background: #eee;
     --dark-color-group-background: #333;
+    --light-background: #fff;
+    --dark-background: rgb(32, 32, 32);
+    --light-header-background: rgba(255, 255, 255, 0.85);
+    --dark-header-background: rgba(32, 32, 32, 0.85);
 }
 
 @media (prefers-color-scheme: light) {
@@ -46,6 +50,8 @@ html {
         --color-accent-text: var(--light-color-accent-text);
         --color-text: var(--light-color-text);
         --color-group-background: var(--light-color-group-background);
+        --background: var(--light-background);
+        --header-background: var(--light-header-background);
     }
 }
 
@@ -57,14 +63,22 @@ html {
         --color-accent-text: var(--dark-color-accent-text);
         --color-text: var(--dark-color-text);
         --color-group-background: var(--dark-color-group-background);
+        --background: var(--dark-background);
+        --header-background: var(--dark-header-background);
     }
 }
 
-body { font-family: headingfont; font-size: var(--font-size); }
+body { font-family: headingfont;
+    font-size: var(--font-size);
+    margin: 0; padding: 0;
+    background-color: var(--background);
+}
 a { color: var(--color-accent2); text-decoration: none; text-decoration-color: var(--color-accent2); }
 a:hover { color: var(--color-accent2); text-decoration: underline; }
 a.external { color: var(--color-accent3) !important; text-decoration-color: var(--color-accent3); }
-div.content { margin: 0 auto; }
+div.content {
+    margin: 1em auto;
+}
 h1,h2,h3,h4,h5,h6 { font-family: headingfont; }
 h1 { text-align: center; }
 p.src { font-size: 80%; font-style: italic;}
@@ -167,6 +181,15 @@ h1.otitle { margin-top: 1em; }
     margin: 0em 1em;
 }
 
+.text-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+    align-content: flex-start;
+    width: 100%;
+}
+
 header {
     display: flex;
     flex-flow: row wrap;
@@ -175,6 +198,11 @@ header {
     align-content: center;
     column-gap: 4em;
     width: 100%;
+    /* stick to top */
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--header-background);
 }
 
 #search-input {
