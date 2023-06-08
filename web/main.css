@@ -81,6 +81,8 @@ div.content {
 }
 h1,h2,h3,h4,h5,h6 { font-family: headingfont; }
 h1 { text-align: center; }
+/* set ul padding so li bullets are flush left */
+ul { padding-left: 1.25em; }
 p.src { font-size: 80%; font-style: italic;}
 .otitle { text-align: center; }
 h1.otitle { margin-top: 1em; }
