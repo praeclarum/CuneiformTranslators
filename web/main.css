@@ -36,6 +36,8 @@ html {
     --dark-color-text: #fff;
     --light-color-group-background: #eee;
     --dark-color-group-background: #333;
+    --light-color-highlight: #ddd;
+    --dark-color-highlight: #555;
     --light-background: #fff;
     --dark-background: rgb(32, 32, 32);
     --light-header-background: rgba(255, 255, 255, 0.85);
@@ -50,6 +52,7 @@ html {
         --color-accent-text: var(--light-color-accent-text);
         --color-text: var(--light-color-text);
         --color-group-background: var(--light-color-group-background);
+        --color-highlight: var(--light-color-highlight);
         --background: var(--light-background);
         --header-background: var(--light-header-background);
     }
@@ -63,6 +66,7 @@ html {
         --color-accent-text: var(--dark-color-accent-text);
         --color-text: var(--dark-color-text);
         --color-group-background: var(--dark-color-group-background);
+        --color-highlight: var(--dark-color-highlight);
         --background: var(--dark-background);
         --header-background: var(--dark-header-background);
     }
@@ -86,7 +90,12 @@ ul { padding-left: 1.25em; }
 p.src { font-size: 80%; font-style: italic;}
 .otitle { text-align: center; }
 h1.otitle { margin-top: 1em; }
-.line:hover, .line-match { background-color: rgba(255, 255, 0, 0.25); }
+.line {
+    border-radius: 0.333em;
+}
+.line:hover, .line-match {
+    background-color: var(--color-highlight);
+}
 .langid {
     font-family: textfont;
     font-style: italic;
@@ -98,7 +107,7 @@ h1.otitle { margin-top: 1em; }
     font-style: italic;
     opacity: 0.75;
     font-size: 11pt !important;
-    line-height: 12pt !important;
+    line-height: 14pt !important;
 }
 .lang-en { opacity: 0.5; }
 .lang-ml_en {}
