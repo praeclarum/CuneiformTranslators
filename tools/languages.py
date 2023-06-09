@@ -1,6 +1,7 @@
 import json
 import requests
 import re
+from collections import defaultdict
 
 old_languages = {
     "akk": "Akkadian",
@@ -461,3 +462,34 @@ def prep_tgt_for_nn(tgt, lang, corpus_id):
     tgt = replace_unsupported_en(tgt)
     tgt = remove_extraneous_space(tgt)
     return tgt
+
+def count_suffix_repeats(text, suffix_length):
+    if suffix_length > len(text):
+        return 0
+    suffix = text[-suffix_length:]
+    # print("suffix", repr(suffix))
+    count = 0
+    index = len(text) - suffix_length
+    while index >= 0 and text[index:(index + suffix_length)] == suffix:
+        count += 1
+        index -= suffix_length
+    return count
+def get_longest_suffix_repeat(text):
+    histogram = defaultdict(int)
+    for suffix_length in range(1, min(16, len(text))):
+        histogram[suffix_length] = count_suffix_repeats(text, suffix_length)
+    # print(histogram)
+    return max(histogram.items(), key=lambda x: x[1])
+def remove_suffix_repeats(text):
+    if len(text) < 16:
+        return text
+    longest_length, longest_count = get_longest_suffix_repeat(text)
+    # print(longest_length, longest_count)
+    if longest_count < 2:
+        return text
+    return text[:-(longest_length * (longest_count - 1))]
+def test_remove_suffix_repeats(text):
+    print("I:", text, "\nO:", remove_suffix_repeats(text))
+# test_remove_suffix_repeats("hi and hello world")
+# test_remove_suffix_repeats("hi and hello world world world")
+# test_remove_suffix_repeats("hi and hello world world world world")
