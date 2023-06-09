@@ -316,9 +316,10 @@ genres = {
     'private-votive',
     'incantation-ritual',
     'priestly-letter', 'extispicy-query', 'legal-transaction', 'extispicy-report', 'administrative-letter', 'decree', 'prophecy', 
-    'scholarly-letter', 'royal-stone-inscription', 'school', 'inscription-on-a-perle', 'literary-work', 'votive-donation', 
+    'scholarly',
+    'votive-donation', 
     'eponym-chronicle', 'hemerological', 'royal-inscription', 'lexical-mathematical', 'appointment', 'astronomical-diary', 
-    'technical-procedure', 'gift', 'astrological', 'grant', 'royal-ritual', 'scholarly',
+    'technical-procedure', 'gift', 'astrological', 'grant', 'royal-ritual',
     'eponym-list',
     'treaty',
     'hymn-prayer'
@@ -332,7 +333,9 @@ def get_genre(x):
     g = str(x).lower().replace("?","").replace("(see subgenre)","").replace("(modern)", "").replace("(seal)", "").replace("/", "-").replace(", ", "-").replace(" & ", "-").strip().replace(" ", "-")
     if g == "other" or g == "nan":
         return "other-genre"
-    if g == 'royal-metal-inscription':
+    if g == "gift" or g == "historical": # 1 offs
+        return "other-genre"
+    if g == 'royal-metal-inscription' or g == 'royal-stone-inscription' or g == 'inscription-on-a-perle':
         return 'royal-inscription'
     if g == 'lexical-text':
         return 'lexical'
@@ -340,6 +343,12 @@ def get_genre(x):
         return 'administrative'
     if g == 'astrological-report':
         return 'astrological'
+    if g == 'literary-work':
+        return 'literary'
+    if g == 'scholarly-letter':
+        return 'scholarly'
+    if g == 'lexical-mathematical':
+        return 'mathematical'
     if g in genres:
         return g
     missing_genres.add(g)
