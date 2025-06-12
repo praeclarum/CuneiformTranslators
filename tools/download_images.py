@@ -64,8 +64,6 @@ def download_pub_images(pub_id, timeout=10):
             del session
             time.sleep(30)
             session = requests.Session()
-    if got_response:
-        time.sleep(1) # Try avoid overwhelming the server with requests
 
 if reverse_download_order:
     pub_ids.reverse()
