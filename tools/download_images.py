@@ -60,9 +60,9 @@ def download_pub_images(pub_id, timeout=10):
                 print(f"Failed to download {url}: {response.status_code}")
         except requests.RequestException as e:
             print(f"Error downloading {url}: {e}")
-            print(f"Retrying after 30 secs...")
+            print(f"Retrying after 61 secs...")
             del session
-            time.sleep(30)
+            time.sleep(61)
             session = requests.Session()
 
 if reverse_download_order:
