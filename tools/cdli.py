@@ -1,14 +1,14 @@
 import io
 import requests
 import re
-import pandas as pd
+import os
 
 import languages
 
 class Publication():
-    def __init__(self, id, language=None, text_areas=None, genre=None, period=None, object_type=None, translation_source=None, src_url=None):
+    def __init__(self, id, language=None, text_areas: list["TextArea"]=None, genre=None, period=None, object_type=None, translation_source=None, src_url=None):
         self.id = id
-        self.text_areas = list() if text_areas is None else text_areas
+        self.text_areas: list["TextArea"] = list() if text_areas is None else text_areas
         self.language = language
         self.genre = genre
         self.period = period
@@ -23,9 +23,9 @@ class Publication():
         return any(x for x in self.text_areas if x.is_translated(tgt_lang))
     
 class TextArea():
-    def __init__(self, name, lines=None, paragraphs=None):
-        self.name = name
-        self.lines = list() if lines is None else lines
+    def __init__(self, name: str, lines: list["TextLine"]=None, paragraphs=None):
+        self.name: str = name
+        self.lines: list["TextLine"] = list() if lines is None else lines
         self.paragraphs = list() if paragraphs is None else paragraphs
     def __repr__(self):
         return f"TextArea({repr(self.name)}, {repr(self.lines)}, {repr(self.paragraphs)})"
@@ -80,9 +80,9 @@ class TextArea():
         return psrcs
 
 class TextLine():
-    def __init__(self, number, text, languages=None):
-        self.number = number
-        self.text = text
+    def __init__(self, number, text: str, languages=None):
+        self.number: str = number
+        self.text: str = text
         self.languages = dict() if languages is None else languages
     def __repr__(self):
         return f"TextLine({repr(self.number)}, {repr(self.text)}, {repr(self.languages)})"
@@ -170,7 +170,7 @@ def json_to_text_paragraph(json):
         json["languages"],
     )
     
-def parse_atf(atf):
+def parse_atf(atf) -> list[Publication]:
     publications = []
     pub = None
     text = None
@@ -218,14 +218,34 @@ def parse_atf(atf):
 
     return publications
 
-def get_atf():
+def get_atf() -> list[Publication]:
     atf_url = "https://github.com/cdli-gh/data/raw/master/cdliatf_unblocked.atf"
     print(f"Downloading {atf_url}")
     atf = str(requests.get(atf_url).content, "utf8")
     print("Parsing atf")
     return parse_atf(atf)
 
+def get_cached_atf(cache_dir=None) -> list[Publication]:
+    if cache_dir is None:
+        src_dir = os.path.dirname(os.path.abspath(__file__))
+        cache_dir = os.path.abspath(os.path.join(src_dir, "..", "data"))
+    cached_path = os.path.join(cache_dir, "cdliatf_unblocked.atf")
+    if os.path.exists(cached_path):
+        print(f"Loading cached atf from {cached_path}")
+        with open(cached_path, "r") as f:
+            atf = f.read()
+        return parse_atf(atf)
+    atf_url = "https://github.com/cdli-gh/data/raw/master/cdliatf_unblocked.atf"
+    print(f"Downloading {atf_url}")
+    atf = str(requests.get(atf_url).content, "utf8")
+    print("Saving atf")
+    with open(cached_path, "w") as f:
+        f.write(atf)
+    print("Parsing atf")
+    return parse_atf(atf)
+
 def get_catalog():
+    import pandas as pd
     cat_url = "https://github.com/cdli-gh/data/raw/master/cdli_cat.csv"
     print(f"Downloading {cat_url}")
     cat_csv = str(requests.get(cat_url).content, "utf8")

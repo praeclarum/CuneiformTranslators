@@ -1,11 +1,15 @@
 node_modules
 package-lock.json
 package.json
+/data/cdliatf.bin
+/data/cdliatf_unblocked.atf
 /data/cdli_photo_annotations
 /data/oracc_pubs.json
 /dist
 /tools/tokenizer_training_data.txt
 /tools/mweb.py
+/tools/compress_atf.py
+
 wandb
 results
 *.DS_Store
