@@ -52,5 +52,5 @@ def download_pub_images(pub_id, timeout=20):
         except requests.RequestException as e:
             print(f"Error downloading {url}: {e}")
 
-for pub_id in tqdm.tqdm(pub_ids[:10]):
+for pub_id in tqdm.tqdm(pub_ids):
     download_pub_images(pub_id)
