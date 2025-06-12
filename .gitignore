@@ -1,14 +1,17 @@
-node_modules
-package-lock.json
-package.json
+/dist
+
 /data/cdliatf.bin
 /data/cdliatf_unblocked.atf
 /data/cdli_photo_annotations
 /data/oracc_pubs.json
-/dist
+/data/image_404s.txt
 /tools/tokenizer_training_data.txt
 /tools/mweb.py
 /tools/compress_atf.py
+
+node_modules
+package-lock.json
+package.json
 
 wandb
 results
