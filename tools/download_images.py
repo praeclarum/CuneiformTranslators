@@ -57,5 +57,5 @@ def download_pub_images(pub_id, timeout=20):
 if reverse_download_order:
     pub_ids.reverse()
 
-for pub_id in tqdm.tqdm(pub_ids[:10]):
+for pub_id in tqdm.tqdm(pub_ids):
     download_pub_images(pub_id)
