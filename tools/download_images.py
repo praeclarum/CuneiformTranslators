@@ -6,6 +6,7 @@ import sys
 import tqdm
 
 downloads_dir = os.environ.get("DOWNLOADS_DIR", "/Volumes/FrankDisk/cdli_images")
+reverse_download_order = "--rev" in sys.argv
 
 src_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.abspath(os.path.join(src_dir, "..", "data"))
@@ -46,11 +47,15 @@ def download_pub_images(pub_id, timeout=20):
                 with open(filename, "wb") as f:
                     f.write(response.content)
             elif response.status_code == 404:
+                # print(f"Image not found for {url}, skipping.")
                 pass
             else:
                 print(f"Failed to download {url}: {response.status_code}")
         except requests.RequestException as e:
             print(f"Error downloading {url}: {e}")
 
-for pub_id in tqdm.tqdm(pub_ids):
+if reverse_download_order:
+    pub_ids.reverse()
+
+for pub_id in tqdm.tqdm(pub_ids[:10]):
     download_pub_images(pub_id)
