@@ -6,7 +6,7 @@ import sys
 import tqdm
 import time
 
-downloads_dir = os.environ.get("DOWNLOADS_DIR", "/Volumes/FrankDisk/cdli_images")
+downloads_dir = os.environ.get("DOWNLOADS_DIR", "/Volumes/nn/Pictures/cdli_images")
 reverse_download_order = "--rev" in sys.argv
 
 src_dir = os.path.dirname(os.path.abspath(__file__))
